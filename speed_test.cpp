@@ -1,6 +1,3 @@
-#include <valarray>
-#include <cstdio>
-#include "array"
 #include "chrono"
 #include "iostream"
 #include <Eigen/Core>
