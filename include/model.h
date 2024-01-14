@@ -48,15 +48,15 @@ struct Joint {
   Eigen::Matrix<double, 4, 4> transform;
   std::string parent_link;
   std::string child_link;
-  Joint *parent = nullptr;
+  long parent = -1;
 };
 
 
 struct Model {
   std::vector<Link> links;
   std::vector<Joint> joints;
-  Joint *root;
-  std::vector<Joint *> chain;
+  size_t root;
+  std::vector<size_t> chain;
 
   void buildTree(const std::string &base, const std::string &end_effector) {
     std::unordered_map<std::string, Link *> name_link_map;
@@ -64,14 +64,14 @@ struct Model {
       name_link_map[link.name] = &link;
     }
 
-    std::unordered_map<std::string, Joint *> name_joint_map;
-    for (auto &joint: joints) {
-      name_joint_map[joint.name] = &joint;
+    std::unordered_map<std::string, size_t> name_joint_map;
+    for (size_t i = 0; i < joints.size(); i++) {
+      name_joint_map[joints[i].name] = i;
     }
 
-    std::unordered_map<std::string, std::vector<Joint *>> joint_parent_map;
+    std::unordered_map<std::string, std::vector<size_t>> joint_parent_map;
     for (auto &joint: joints) {
-      joint_parent_map[joint.child_link].push_back(&joint);
+      joint_parent_map[joint.child_link].push_back(name_joint_map[joint.name]);
     }
 
     root = name_joint_map[base];
@@ -83,10 +83,10 @@ struct Model {
       }
     }
 
-    Joint* tmp_joint = name_joint_map[end_effector];
-    while (tmp_joint) {
+    size_t tmp_joint = name_joint_map[end_effector];
+    while (tmp_joint != -1) {
       chain.push_back(tmp_joint);
-      tmp_joint = tmp_joint->parent;
+      tmp_joint = joints[tmp_joint].parent;
     }
 
   }

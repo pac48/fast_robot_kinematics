@@ -11,7 +11,8 @@
 void forwardPosition(Model& model){
   Eigen::Matrix<double, 4, 4> T = Eigen::Matrix<double, 4, 4>::Identity();
   for (int i = model.chain.size() - 1; i >= 0; i--) {
-    Joint *joint = model.chain[i];
+    size_t joint_ind = model.chain[i];
+    auto joint = &model.joints[joint_ind];
     Eigen::Matrix<double, 4, 4> T_joint = Eigen::Matrix<double, 4, 4>::Identity();
     if (joint->joint_type == JointType::REVOLUTE){
       Eigen::AngleAxisd rot(joint->val[0], Eigen::Vector3d::UnitZ());
