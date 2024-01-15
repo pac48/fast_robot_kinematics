@@ -9,6 +9,8 @@ enum OP {
 
 struct Data {
   std::array<Eigen::Vector<double, 4>, 12> data_; // TODO remove later
+  double sin_t;
+  double cos_t_m1;
   std::array<Eigen::Vector<double, 4>, 4> R1;
   std::array<Eigen::Vector<double, 4>, 4> R2;
 
@@ -25,9 +27,7 @@ struct Data {
 
 template<OP ...T>
 inline void
-forward_kinematics_internal(const Eigen::Matrix<double, sizeof...(T), 7> &angles,
-                            std::array<std::array<Eigen::Vector<double, 4>, 4>, sizeof...(T)> &sum_matrix_out);
+forward_kinematics_internal(std::array<double, 24 * sizeof...(T)> &input_data);
 
 template<OP ...T>
-inline void forward_kinematics(const Eigen::Matrix<double, sizeof...(T), 7> &angles,
-                               std::array<std::array<Eigen::Vector<double, 4>, 4>, sizeof...(T)> &sum_matrix_out);
+inline void forward_kinematics(std::array<double, 24 * sizeof...(T)> &input_data);

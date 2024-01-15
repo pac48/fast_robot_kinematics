@@ -17,7 +17,7 @@ target_link_libraries(speed_test Eigen3::Eigen)
 
 
 
-add_library(matrix_exponential STATIC matrix_exponential.cpp)
+add_library(matrix_exponential SHARED matrix_exponential.cpp)
 target_link_libraries(matrix_exponential PUBLIC Eigen3::Eigen)
 set_target_properties(matrix_exponential PROPERTIES CMAKE_BUILD_TYPE Release)
 target_compile_options(matrix_exponential PUBLIC -O3 -ffast-math -march=native ) # -msse3
