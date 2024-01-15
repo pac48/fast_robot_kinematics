@@ -20,8 +20,10 @@ target_link_libraries(speed_test Eigen3::Eigen)
 add_library(matrix_exponential STATIC matrix_exponential.cpp)
 target_link_libraries(matrix_exponential PUBLIC Eigen3::Eigen)
 set_target_properties(matrix_exponential PROPERTIES CMAKE_BUILD_TYPE Release)
-target_compile_options(matrix_exponential PUBLIC -O3 -ffast-math -march=native -msse3)
+target_compile_options(matrix_exponential PUBLIC -O3 -ffast-math -march=native ) # -msse3
 
 
-add_executable(matrix_exponential_test matrix_exponential_test.cpp)
+add_executable(matrix_exponential_test matrix_exponential_test.cpp matrix_exponential.cpp)
 target_link_libraries(matrix_exponential_test PRIVATE matrix_exponential)
+set_target_properties(matrix_exponential_test PROPERTIES CMAKE_BUILD_TYPE Release)
+target_compile_options(matrix_exponential_test PUBLIC -O3 -ffast-math -march=native) # -msse3
