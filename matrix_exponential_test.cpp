@@ -8,12 +8,12 @@ int main(int arc, char **argv) {
   std::tuple<int, int, int> ss;
 
   constexpr int iterations = 128 * 128 * 128;
-  std::array<double, 7 * 7> input_data = {0};
+  std::array<double, 7 * 17> input_data = {0};
   auto start = std::chrono::high_resolution_clock::now();
   for (int i = 0; i < iterations; i++) {
     if ((i % 1000) == 0) {
       srand((unsigned int) time(0));
-      Eigen::Vector<double, 7*7> rand = Eigen::Vector<double, 7*7>::Random();;
+      Eigen::Vector<double, 7*17> rand = Eigen::Vector<double, 7*17>::Random();;
       int ind = 0;
       for (const auto &m: rand) {
         input_data[ind] = m;

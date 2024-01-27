@@ -27,7 +27,7 @@ struct Data {
 
 template<OP ...T>
 inline void
-forward_kinematics_internal(std::array<double, 7 * sizeof...(T)> &input_data);
+forward_kinematics_internal(std::array<double, 17 * sizeof...(T)> &input_data);
 
 template<OP ...T>
-inline void forward_kinematics(std::array<double, 7 * sizeof...(T)> &input_data);
+inline void forward_kinematics(std::array<double, 17 * sizeof...(T)> &input_data);
