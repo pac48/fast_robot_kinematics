@@ -10,26 +10,30 @@ double rand_double() {
 
 int main(int arc, char **argv) {
   constexpr int iterations = 128 * 128 * 128;
-  constexpr size_t num_joints = 10;
-  std::array<double, num_joints * 17> input_data = {0};
+  constexpr size_t num_joints = FAST_FK_NUMBER_OF_JOINTS;
+  std::array<fast_fk::JointData, num_joints> joints = {0};
   auto start = std::chrono::high_resolution_clock::now();
+  double rand_val = 0;
   for (int i = 0; i < iterations; i++) {
     if ((i % 1000) == 0) {
       srand((unsigned int) time(0));
-      for (auto & val: input_data) {
-        val = rand_double();
-      }
+      rand_val = rand_double();
+    }
+    rand_val *= 0.999;
+    for (auto k = 0; k < num_joints; ++k) {
+//      joints[k].set_joint(rand_val, sqrt(1.0 - rand_val * rand_val));
+//      rand_val = 3.141592/2;
+      joints[k].set_joint(rand_val);
     }
 
-    fast_fk::forward_kinematics(input_data);
+    fast_fk::forward_kinematics(joints);
   }
 
   auto stop = std::chrono::high_resolution_clock::now();
   auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start);
 
-  int i = 0;
-  for (auto &val: input_data) {
-    std::cout << i << ": final value: " << val << std::endl;
+  for (auto i = 0; i < num_joints; ++i) {
+    std::cout << i << ": final value: " << joints[i].joint_data[4] << std::endl;
     i++;
   }
 
