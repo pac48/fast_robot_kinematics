@@ -1,6 +1,6 @@
 #pragma once
 
-#include "matrix_exponential.hpp"
+#include "forward_kinematics.hpp"
 
 namespace fast_fk {
   enum OP {
