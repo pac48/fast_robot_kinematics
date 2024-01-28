@@ -5,7 +5,6 @@ import numpy as np
 
 
 def run():
-
     parser = argparse.ArgumentParser()
     parser.add_argument('urdf_file')
     parser.add_argument('fk_template')
@@ -16,16 +15,10 @@ def run():
 
     root_link_name = args.root_link_name
     tip_link_name = args.tip_link_name
-
-    # root_link_name = "base_link"
-    # tip_link_name = "grasp_link"
-
-
     with open(args.urdf_file) as f:
         robot = urdf.Robot.from_xml_string(f.read())
 
-
-    def get_T(joint):
+    def get_transform(joint):
         rpy = joint.origin.rpy
         xyz = joint.origin.xyz
         T = np.eye(4)
@@ -46,7 +39,6 @@ def run():
 
         return T
 
-
     rotations = []
     offsets = []
     types = []
@@ -61,14 +53,21 @@ def run():
     for joint_name in joint_names:
         joint = robot.joint_map[joint_name]
         if joint.type == 'fixed':
-            T_fixed = T_fixed * get_T(joint)
+            T_fixed = T_fixed * get_transform(joint)
         elif joint.type == 'revolute':
-            T = get_T(joint)
+            # TODO: need to add joint limits?
+            T = get_transform(joint)
+            rotations.append(T[:3, :3])
+            offsets.append(T[:3, 3])
+            types.append('revolute')
+        elif joint.type == 'continuous':
+            T = get_transform(joint)
             rotations.append(T[:3, :3])
             offsets.append(T[:3, 3])
             types.append('revolute')
         elif joint.type == 'prismatic':
-            T = get_T(joint)
+            # TODO: need to add joint limits?
+            T = get_transform(joint)
             rotations.append(T[:3, :3])
             offsets.append(T[:3, 3])
             types.append('prismatic')

@@ -10,7 +10,7 @@ double rand_double() {
 
 int main(int arc, char **argv) {
   constexpr int iterations = 128 * 128 * 128;
-  constexpr size_t num_joints = 6;
+  constexpr size_t num_joints = 10;
   std::array<double, num_joints * 17> input_data = {0};
   auto start = std::chrono::high_resolution_clock::now();
   for (int i = 0; i < iterations; i++) {
