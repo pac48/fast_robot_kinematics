@@ -3,27 +3,24 @@
 #include "matrix_exponential.hpp"
 
 
+double rand_double() {
+  double div = RAND_MAX / 2;
+  return -1 + (rand() / div);
+}
+
 int main(int arc, char **argv) {
-
-  std::tuple<int, int, int> ss;
-
   constexpr int iterations = 128 * 128 * 128;
-  std::array<double, 7 * 17> input_data = {0};
+  std::array<double, 6 * 17> input_data = {0};
   auto start = std::chrono::high_resolution_clock::now();
   for (int i = 0; i < iterations; i++) {
     if ((i % 1000) == 0) {
       srand((unsigned int) time(0));
-      Eigen::Vector<double, 7*17> rand = Eigen::Vector<double, 7*17>::Random();;
-      int ind = 0;
-      for (const auto &m: rand) {
-        input_data[ind] = m;
-        ind++;
+      for (auto & val: input_data) {
+        val = rand_double();
       }
     }
 
-    forward_kinematics<OP::ROT, OP::ROT, OP::ROT, OP::ROT, OP::ROT, OP::ROT, OP::TRANS>(input_data);
-//    forward_kinematics<OP::ROT, OP::ROT, OP::ROT, OP::ROT, OP::ROT, OP::ROT, OP::ROT, OP::ROT, OP::ROT, OP::ROT, OP::ROT, OP::ROT, OP::ROT, OP::ROT, OP::ROT, OP::ROT, OP::ROT, OP::ROT,OP::ROT, OP::ROT, OP::ROT, OP::ROT, OP::ROT, OP::ROT, OP::ROT, OP::ROT, OP::ROT, OP::ROT, OP::ROT, OP::ROT, OP::ROT, OP::ROT, OP::ROT, OP::ROT, OP::ROT, OP::ROT, OP::TRANS>(
-//        input_data);
+    fast_fk::forward_kinematics(input_data);
   }
 
   auto stop = std::chrono::high_resolution_clock::now();

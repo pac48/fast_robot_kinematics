@@ -74,3 +74,6 @@ print()
 # print(tmp[1, 0].simplify())
 # print(tmp[2, 0].simplify())
 print(tmp)
+
+
+
