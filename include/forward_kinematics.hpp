@@ -13,22 +13,45 @@ namespace fast_fk {
       joint_data[1] = std::cos(value);
     }
 
+    void set_joints(const double *values) {
+      for (auto i = 0; i < FAST_FK_NUMBER_OF_JOINTS; ++i) {
+        joint_data[i * 17] = std::sin(values[i]);
+        joint_data[i * 17 + 1] = std::cos(values[i]);
+      }
+    }
+
+    double get_joint(size_t ind) {
+      return asin(joint_data[ind * 17]);
+    }
+
+    double get_joints(double *values) {
+      for (auto i = 0; i < FAST_FK_NUMBER_OF_JOINTS; ++i) {
+        values[i] = asin(joint_data[i * 17]);
+      }
+    }
+
     void set_joint(double sin_t, double cos_t) {
       joint_data[0] = sin_t;
       joint_data[1] = cos_t;
     }
+
+    void set_joints(const double *sin_values, const double *cos_values) {
+      for (auto i = 0; i < FAST_FK_NUMBER_OF_JOINTS; ++i) {
+        joint_data[i * 17] = sin_values[i];
+        joint_data[i * 17 + 1] = cos_values[i];
+      }
+    }
   };
 
   namespace internal {
-    template<std::size_t SIZE>
-    void forward_kinematics_internal(std::array<JointData, SIZE> &input_data);
+    void forward_kinematics_internal(double *input_data);
   }
 
   template<std::size_t SIZE>
   void forward_kinematics(std::array<JointData, SIZE> &input_data) {
     static_assert(SIZE == FAST_FK_NUMBER_OF_JOINTS,
                   "`forward_kinematics` called with the wrong number of joints. Hint: FAST_FK_NUMBER_OF_JOINTS defines the correct number of joints.");
-    internal::forward_kinematics_internal(input_data);
+    internal::forward_kinematics_internal(input_data.data()->joint_data.data());
   }
 
 }

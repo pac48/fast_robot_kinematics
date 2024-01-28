@@ -32,10 +32,10 @@ int main(int arc, char **argv) {
   auto stop = std::chrono::high_resolution_clock::now();
   auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start);
 
-  for (auto i = 0; i < num_joints; ++i) {
-    std::cout << i << ": final value: " << joints[i].joint_data[4] << std::endl;
-    i++;
-  }
+//  for (auto i = 0; i < num_joints; ++i) {
+//    std::cout << i << ": final value: " << joints[i].joint_data[4] << std::endl;
+//    i++;
+//  }
 
   std::cout << "Time taken by function: " << (double) duration.count() << " nanoseconds" << std::endl;
   std::cout << "Average: " << ((double) duration.count()) / (iterations) << " nanoseconds"

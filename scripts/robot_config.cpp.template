@@ -3,10 +3,6 @@
 #include "forward_kinematics.hpp"
 
 namespace fast_fk::internal {
-  enum OP {
-    ROT,
-    TRANS
-  };
 
   // row major
 constexpr std::array<double, {{rotations|length}}* 9> R_all = {
@@ -27,14 +23,13 @@ constexpr std::array<double, {{rotations|length}}* 3> offset_all = {
 };
 
 
-  template<OP ...T>
-  inline void
-  forward_kinematics_internal_ptr(double *input_data) {
+  void forward_kinematics_internal(double *input_data) {
     // sin(t) cos(t)  R11, R12, R13... px py pz
     constexpr int size = 2 + 3 + 9 + 3; // 17
 
-    std::size_t ind = 0;
-    ([&input_data, &ind]() {
+    {% for type in types %}
+    {
+    constexpr std::size_t ind = {{loop.index0}};
       // row major
       const double &R11_fixed = R_all[ind * 9 + 0];
       const double &R21_fixed = R_all[ind * 9 + 1];
@@ -62,11 +57,12 @@ constexpr std::array<double, {{rotations|length}}* 3> offset_all = {
       double &R33 = input_data[ind * size + 13];
 
 
-      if constexpr (T == OP::ROT) {
+      {% if type=='revolute' %}
+
         const double &sin_t = input_data[ind * size + 0];
         const double &cos_t = input_data[ind * size + 1];
 
-        if (ind == 0) {
+      {% if loop.index0==0 %}
           // calculate R_fixed*R_joint (build column major)
 
           R11 = R11_fixed * cos_t + R12_fixed * sin_t;
@@ -83,8 +79,7 @@ constexpr std::array<double, {{rotations|length}}* 3> offset_all = {
           input_data[ind * size + 3] = R21 * offset_x + R22 * offset_y + R23 * offset_z;
           input_data[ind * size + 4] = R31 * offset_x + R32 * offset_y + R33 * offset_z;
 
-
-        } else {
+      {% else %}
           // calculate R_cum*R_fixed*R_joint (build column major)
 
           // column major
@@ -159,17 +154,17 @@ constexpr std::array<double, {{rotations|length}}* 3> offset_all = {
           input_data[ind * size + 4] = tmp3;
 
 
-        }
+      {% endif %}
 
-      } else if constexpr (T == OP::TRANS) {
-        if (ind == 0) {
+      {% elif type=='prismatic' %}
+      {% if loop.index0==0 %}
 
           const double &linear = input_data[ind * size + 0];
           input_data[ind * size + 2] = R13_fixed * linear + offset_x;
           input_data[ind * size + 3] = R23_fixed * linear + offset_y;
           input_data[ind * size + 4] = R33_fixed * linear + offset_z;
 
-        } else {
+      {% else %}
           // column major
           double &R11_old = input_data[(ind - 1) * size + 5];
           double &R12_old = input_data[(ind - 1) * size + 6];
@@ -215,16 +210,10 @@ constexpr std::array<double, {{rotations|length}}* 3> offset_all = {
           input_data[ind * size + 2] = px_old + R13 * linear;
           input_data[ind * size + 3] = py_old + R23 * linear;
           input_data[ind * size + 4] = pz_old + R33 * linear;
-        }
-
-      }
-      ind += 1;
-    }(), ...);
-  }
-
-  template<>
-  void forward_kinematics_internal(std::array<JointData, {{types|length}}> &input_data) {
-    forward_kinematics_internal_ptr<{% for type in types %}{% if type=='revolute' %}OP::ROT{% elif type=='prismatic' %}OP::TRANS{% endif %}{% if loop.index < types|length%}, {% endif %}{% endfor %}>(input_data.data()->joint_data.data());
+      {% endif %}
+    {% endif %}
+    }
+    {% endfor %}
   }
 
 }
