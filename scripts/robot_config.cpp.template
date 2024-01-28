@@ -80,14 +80,6 @@ constexpr std::array<double, {{rotations|length}}* 3> offset_all = {
           R32 = -R31_fixed * sin_t + R32_fixed * cos_t;
           R33 = R33_fixed;
 
-//        double &tmp1 = input_data[ind * size + 14];
-//        double &tmp2 = input_data[ind * size + 15];
-//        double &tmp3 = input_data[ind * size + 16];
-
-//        tmp1 = R11 * offset_x + R12 * offset_y + R13 * offset_z;
-//        tmp2 = R21 * offset_x + R22 * offset_y + R23 * offset_z;
-//        tmp3 = R31 * offset_x + R32 * offset_y + R33 * offset_z;
-
           input_data[ind * size + 2] = R11 * offset_x + R12 * offset_y + R13 * offset_z;
           input_data[ind * size + 3] = R21 * offset_x + R22 * offset_y + R23 * offset_z;
           input_data[ind * size + 4] = R31 * offset_x + R32 * offset_y + R33 * offset_z;
@@ -162,10 +154,6 @@ constexpr std::array<double, {{rotations|length}}* 3> offset_all = {
           tmp2 = R21 * offset_x + R22 * offset_y + R23 * offset_z + py_old;
           tmp3 = R31 * offset_x + R32 * offset_y + R33 * offset_z + pz_old;
 
-//        double &px = input_data[ind * size + 2];
-//        double &py = input_data[ind * size + 3];
-//        double &pz = input_data[ind * size + 4];
-
           input_data[ind * size + 2] = tmp1;
           input_data[ind * size + 3] = tmp2;
           input_data[ind * size + 4] = tmp3;
@@ -175,7 +163,7 @@ constexpr std::array<double, {{rotations|length}}* 3> offset_all = {
 
 
       } else if constexpr (T == OP::TRANS) {
-//      sum_matrix_out[ind][3].array() = sum_matrix_out[ind][3].array() * 1.000001 - .7;
+        // TODO
       }
       ind += 1;
     }(), ...);
@@ -183,8 +171,8 @@ constexpr std::array<double, {{rotations|length}}* 3> offset_all = {
 
 
   template<>
-  void forward_kinematics(std::array<double, 102> &input_data) {
-    forward_kinematics_internal<OP::ROT, OP::ROT, OP::ROT, OP::ROT, OP::ROT, OP::ROT>(input_data);
+  void forward_kinematics(std::array<double, {{types|length}}*17> &input_data) {
+    forward_kinematics_internal<{% for type in types %}{% if type=='revolute' %}OP::ROT{% elif type=='prismatic' %}OP::TRANS{% endif %}{% if loop.index < types|length%}, {% endif %}{% endfor %}>(input_data);
   }
 
 }
