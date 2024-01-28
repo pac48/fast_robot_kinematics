@@ -21,7 +21,7 @@ int main(int arc, char **argv) {
     }
     rand_val *= 0.999;
     for (auto k = 0; k < num_joints; ++k) {
-//      joints[k].set_joint(rand_val, sqrt(1.0 - rand_val * rand_val));
+      joints[k].set_joint(rand_val, sqrt(1.0 - rand_val * rand_val));
 //      rand_val = 3.141592/2;
       joints[k].set_joint(rand_val);
     }
