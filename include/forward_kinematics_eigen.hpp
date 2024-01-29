@@ -82,6 +82,9 @@ namespace fast_fk {
       transform(2, 1) = joint_data[index][12];
       transform(2, 2) = joint_data[index][13];
 
+      transform(3, 0) = 0.0;
+      transform(3, 1) = 0.0;
+      transform(3, 2) = 0.0;
       transform(3, 3) = 1.0;
     }
   };

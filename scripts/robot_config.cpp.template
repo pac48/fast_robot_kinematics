@@ -79,7 +79,7 @@ constexpr std::array<double, {{rotations|length}}* 3> offset_all = {
       input_data[ind * size + 4] = R31 * offset_x + R32 * offset_y + R33 * offset_z;
 
       {% else %}
-      // R_old is the rotation from joint_i in base frame (row major)
+      // R_old is the rotation from joint_i in base frame (column major)
       double &R11_old = input_data[(ind - 1) * size + 5];
       double &R12_old = input_data[(ind - 1) * size + 6];
       double &R13_old = input_data[(ind - 1) * size + 7];
@@ -90,26 +90,26 @@ constexpr std::array<double, {{rotations|length}}* 3> offset_all = {
       double &R32_old = input_data[(ind - 1) * size + 12];
       double &R33_old = input_data[(ind - 1) * size + 13];
 
-      // R_tmp is the rotation from joint_i+1 in frame joint_i after rotation applied (row major)
+      // R_tmp is the rotation from joint_i+1 in frame joint_i after rotation applied (column major)
       double &R11_tmp = input_data[ind * size + 5];
-      double &R21_tmp = input_data[ind * size + 6];
-      double &R31_tmp = input_data[ind * size + 7];
-      double &R12_tmp = input_data[ind * size + 8];
+      double &R12_tmp = input_data[ind * size + 6];
+      double &R13_tmp = input_data[ind * size + 7];
+      double &R21_tmp = input_data[ind * size + 8];
       double &R22_tmp = input_data[ind * size + 9];
-      double &R32_tmp = input_data[ind * size + 10];
-      double &R13_tmp = input_data[ind * size + 11];
-      double &R23_tmp = input_data[ind * size + 12];
+      double &R23_tmp = input_data[ind * size + 10];
+      double &R31_tmp = input_data[ind * size + 11];
+      double &R32_tmp = input_data[ind * size + 12];
       double &R33_tmp = input_data[ind * size + 13];
 
       // apply revolute rotation to R11_fixed and store in R11_tmp
       R11_tmp = R11_fixed * cos_t + R12_fixed * sin_t;
-      R21_tmp = R21_fixed * cos_t + R22_fixed * sin_t;
-      R31_tmp = R31_fixed * cos_t + R32_fixed * sin_t;
       R12_tmp = -R11_fixed * sin_t + R12_fixed * cos_t;
-      R22_tmp = -R21_fixed * sin_t + R22_fixed * cos_t;
-      R32_tmp = -R31_fixed * sin_t + R32_fixed * cos_t;
       R13_tmp = R13_fixed;
+      R21_tmp = R21_fixed * cos_t + R22_fixed * sin_t;
+      R22_tmp = -R21_fixed * sin_t + R22_fixed * cos_t;
       R23_tmp = R23_fixed;
+      R31_tmp = R31_fixed * cos_t + R32_fixed * sin_t;
+      R32_tmp = -R31_fixed * sin_t + R32_fixed * cos_t;
       R33_tmp = R33_fixed;
 
       // tmp used to store temporary results of apply R_old + R_tmp (build column major)

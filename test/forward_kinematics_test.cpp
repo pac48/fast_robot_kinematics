@@ -20,8 +20,14 @@ int main(int arc, char **argv) {
     auto &rand_val = rand_values[i];
     joints.set_joints(rand_val, (1.0 - rand_val.array() * rand_val.array()).sqrt());
     fast_fk::forward_kinematics(joints);
-    Eigen::Matrix4d transform;
-    joints.get_frame(5, transform);
+
+    //    Eigen::Matrix4d transform;
+//    for (auto ind_debug = 0 ; ind_debug<6; ind_debug++){
+//      joints.get_frame(ind_debug, transform);
+//      std::cout << transform <<"\n\n";
+//    }
+
+//    break;
   }
 
   auto stop = std::chrono::high_resolution_clock::now();

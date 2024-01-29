@@ -28,7 +28,6 @@ function(generate_fast_forward_kinematics_library URDF_FILE ROOT_LINK TIP_LINK)
   target_include_directories(fast_forward_kinematics_library PUBLIC ${CMAKE_SOURCE_DIR}/include)
   target_compile_definitions(fast_forward_kinematics_library PUBLIC "${FAST_FK_NUMBER_OF_JOINTS}")
   set_target_properties(fast_forward_kinematics_library PROPERTIES CMAKE_BUILD_TYPE Release)
-  target_compile_options(fast_forward_kinematics_library PRIVATE -O3 -march=native)
 
   option(USE_EIGEN "Enables Eigen types in the generated library" ON)
   find_package(Eigen3 3.3 NO_MODULE)
