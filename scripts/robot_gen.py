@@ -56,18 +56,21 @@ def run():
             T_fixed = T_fixed * get_transform(joint)
         elif joint.type == 'revolute':
             # TODO: need to add joint limits?
-            T = get_transform(joint)
+            T = get_transform(joint) @ T_fixed
+            T_fixed = np.eye(4)
             rotations.append(T[:3, :3])
             offsets.append(T[:3, 3])
             types.append('revolute')
         elif joint.type == 'continuous':
-            T = get_transform(joint)
+            T = get_transform(joint) @ T_fixed
+            T_fixed = np.eye(4)
             rotations.append(T[:3, :3])
             offsets.append(T[:3, 3])
             types.append('revolute')
         elif joint.type == 'prismatic':
             # TODO: need to add joint limits?
-            T = get_transform(joint)
+            T = get_transform(joint) @ T_fixed
+            T_fixed = np.eye(4)
             rotations.append(T[:3, :3])
             offsets.append(T[:3, 3])
             types.append('prismatic')

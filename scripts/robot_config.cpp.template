@@ -5,22 +5,22 @@
 namespace fast_fk::internal {
 
   // row major
-constexpr std::array<double, {{rotations|length}}* 9> R_all = {
+  constexpr std::array<double, {{rotations|length}}* 9> R_all = {
     {%- for rotation in rotations %}
     {%- for row in rotation %}
     {%- for val in row %} {{val}},
     {%- endfor %}
     {% endfor %}
     {%- endfor -%}
-};
+  };
 
 
-constexpr std::array<double, {{rotations|length}}* 3> offset_all = {
+  constexpr std::array<double, {{rotations|length}}* 3> offset_all = {
     {%- for offset in offsets %}
     {%- for val in offset %} {{val}},
     {%- endfor %}
     {% endfor -%}
-};
+  };
 
 
   void forward_kinematics_internal(double *input_data) {
@@ -74,9 +74,9 @@ constexpr std::array<double, {{rotations|length}}* 3> offset_all = {
       R33 = R33_fixed;
 
       // rotate offset to be in base frame
-      input_data[ind * size + 2] = R11 * offset_x + R12 * offset_y + R13 * offset_z;
-      input_data[ind * size + 3] = R21 * offset_x + R22 * offset_y + R23 * offset_z;
-      input_data[ind * size + 4] = R31 * offset_x + R32 * offset_y + R33 * offset_z;
+      input_data[ind * size + 2] = offset_x;
+      input_data[ind * size + 3] = offset_y;
+      input_data[ind * size + 4] = offset_z;
 
       {% else %}
       // R_old is the rotation from joint_i in base frame (column major)
@@ -143,9 +143,9 @@ constexpr std::array<double, {{rotations|length}}* 3> offset_all = {
       const double &pz_old = input_data[(ind - 1) * size + 4];
 
       // rotate offset to be in base frame and add p_old
-      tmp1 = R11 * offset_x + R12 * offset_y + R13 * offset_z + px_old;
-      tmp2 = R21 * offset_x + R22 * offset_y + R23 * offset_z + py_old;
-      tmp3 = R31 * offset_x + R32 * offset_y + R33 * offset_z + pz_old;
+      tmp1 = R11_old * offset_x + R12_old * offset_y + R13_old * offset_z + px_old;
+      tmp2 = R21_old * offset_x + R22_old * offset_y + R23_old * offset_z + py_old;
+      tmp3 = R31_old * offset_x + R32_old * offset_y + R33_old * offset_z + pz_old;
       input_data[ind * size + 2] = tmp1;
       input_data[ind * size + 3] = tmp2;
       input_data[ind * size + 4] = tmp3;
@@ -207,20 +207,20 @@ constexpr std::array<double, {{rotations|length}}* 3> offset_all = {
       R33 = tmp3;
 
       // rotate offset to be in base frame
-      tmp1 = R11 * offset_x + R12 * offset_y + R13 * offset_z;
-      tmp2 = R21 * offset_x + R22 * offset_y + R23 * offset_z ;
-      tmp3 = R31 * offset_x + R32 * offset_y + R33 * offset_z ;
+      tmp1 = R11_old * offset_x + R12_old * offset_y + R13_old * offset_z;
+      tmp2 = R21_old * offset_x + R22_old * offset_y + R23_old * offset_z ;
+      tmp3 = R31_old * offset_x + R32_old * offset_y + R33_old * offset_z ;
 
       // add offset, prismatic actuation, and old position in base frame
       const double &px_old = input_data[(ind - 1) * size + 2];
       const double &py_old = input_data[(ind - 1) * size + 3];
       const double &pz_old = input_data[(ind - 1) * size + 4];
       const double &linear = input_data[ind * size + 0];
-      input_data[ind * size + 2] = tmp1 + R13 * linear + px_old;
-      input_data[ind * size + 3] = tmp2 + R23 * linear + py_old;
-      input_data[ind * size + 4] = tmp3 + R33 * linear + pz_old;
+      input_data[ind * size + 2] = tmp1 + R13_old * linear + px_old;
+      input_data[ind * size + 3] = tmp2 + R23_old * linear + py_old;
+      input_data[ind * size + 4] = tmp3 + R33_old * linear + pz_old;
       {% endif %}
-    {% endif %}
+      {% endif %}
     }
     {% endfor %}
   }
