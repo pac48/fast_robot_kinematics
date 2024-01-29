@@ -54,18 +54,18 @@ namespace fast_fk {
     }
 
 
-    double get_joint(size_t ind) {
+    [[nodiscard]] double get_joint(size_t ind) const {
       return asin(joint_data[ind][0]);
     }
 
-    void get_joints(double *values) {
+    void get_joints(double *values) const {
       for (auto ind = 0; ind < FAST_FK_NUMBER_OF_JOINTS; ++ind) {
         values[ind] = asin(joint_data[ind][0]);
       }
     }
 
 
-    void get_frame(size_t index, Eigen::Matrix<double, 4, 4> &transform) {
+    void get_frame(size_t index, Eigen::Matrix<double, 4, 4> &transform) const {
       transform(0, 3) = joint_data[index][2];
       transform(1, 3) = joint_data[index][3];
       transform(2, 3) = joint_data[index][4];

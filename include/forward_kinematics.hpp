@@ -6,58 +6,52 @@
 
 namespace fast_fk {
   namespace internal {
+    // input_data: sin(t) cos(t)  px py pz R11, R12, R13...
     void forward_kinematics_internal(double *input_data);
+
     constexpr size_t joint_data_length = 17;
   }
 
   struct JointData {
-    std::array<double, internal::joint_data_length> joint_data;
+    std::array<std::array<double, internal::joint_data_length>, FAST_FK_NUMBER_OF_JOINTS> joint_data = {0};
 
-    void set_joint(double value) {
-      joint_data[0] = std::sin(value);
-      joint_data[1] = std::cos(value);
+    void set_joint(size_t ind, double value) {
+      joint_data[ind][0] = std::sin(value);
+      joint_data[ind][1] = std::cos(value);
     }
 
     void set_joints(const double *values) {
-      for (auto i = 0; i < FAST_FK_NUMBER_OF_JOINTS; ++i) {
-        joint_data[i * internal::joint_data_length] = std::sin(values[i]);
-        joint_data[i * internal::joint_data_length + 1] = std::cos(values[i]);
+      for (auto ind = 0; ind < FAST_FK_NUMBER_OF_JOINTS; ++ind) {
+        joint_data[ind][0] = std::sin(values[ind]);
+        joint_data[ind][1] = std::cos(values[ind]);
       }
     }
 
-    double get_joint(size_t ind) {
-      return asin(joint_data[ind * 17]);
-    }
-
-    void get_joints(double *values) {
-      for (auto i = 0; i < FAST_FK_NUMBER_OF_JOINTS; ++i) {
-        values[i] = asin(joint_data[i * internal::joint_data_length]);
-      }
-    }
-
-    void set_joint(double sin_t, double cos_t) {
-      joint_data[0] = sin_t;
-      joint_data[1] = cos_t;
+    void set_joint(size_t ind, double sin_t, double cos_t) {
+      joint_data[ind][0] = sin_t;
+      joint_data[ind][1] = cos_t;
     }
 
     void set_joints(const double *sin_values, const double *cos_values) {
-      for (auto i = 0; i < FAST_FK_NUMBER_OF_JOINTS; ++i) {
-        joint_data[i * internal::joint_data_length] = sin_values[i];
-        joint_data[i * internal::joint_data_length + 1] = cos_values[i];
+      for (auto ind = 0; ind < FAST_FK_NUMBER_OF_JOINTS; ++ind) {
+        joint_data[ind][0] = sin_values[ind];
+        joint_data[ind][1] = cos_values[ind];
       }
     }
 
-    void get_frame(){
+    [[nodiscard]] double get_joint(size_t ind) const {
+      return asin(joint_data[ind][0]);
+    }
 
+    void get_joints(double *values) const {
+      for (auto ind = 0; ind < FAST_FK_NUMBER_OF_JOINTS; ++ind) {
+        values[ind] = asin(joint_data[ind][0]);
+      }
     }
   };
 
-
-  template<std::size_t SIZE>
-  void forward_kinematics(std::array<JointData, SIZE> &input_data) {
-    static_assert(SIZE == FAST_FK_NUMBER_OF_JOINTS,
-                  "`forward_kinematics` called with the wrong number of joints. Hint: FAST_FK_NUMBER_OF_JOINTS defines the correct number of joints.");
-    internal::forward_kinematics_internal(input_data.data()->joint_data.data());
+  void forward_kinematics(JointData &input_data) {
+    internal::forward_kinematics_internal(input_data.joint_data.data()->data());
   }
 
 }
