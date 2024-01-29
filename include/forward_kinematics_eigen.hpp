@@ -1,8 +1,7 @@
 #ifndef FAST_FORWARD_KINEMATICS_HPP
 #define FAST_FORWARD_KINEMATICS_HPP
 
-#include "array"
-#include "cmath"
+#include <Eigen/Core>
 
 namespace fast_fk {
   namespace internal {
