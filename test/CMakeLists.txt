@@ -10,6 +10,5 @@ generate_fast_forward_kinematics_library(${CMAKE_SOURCE_DIR}/test/robot.urdf bas
 
 add_executable(forward_kinematics_test forward_kinematics_test.cpp)
 target_link_libraries(forward_kinematics_test PRIVATE fast_forward_kinematics_library)
-#set_target_properties(matrix_exponential_test PROPERTIES CMAKE_BUILD_TYPE Debug)
-#target_compile_options(fast_forward_kinematics_library PUBLIC -O0 )
+target_compile_options(fast_forward_kinematics_library PRIVATE -O3 -march=native)
 

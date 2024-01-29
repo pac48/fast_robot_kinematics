@@ -24,7 +24,7 @@ constexpr std::array<double, {{rotations|length}}* 3> offset_all = {
 
 
   void forward_kinematics_internal(double *input_data) {
-    // sin(t) cos(t)  R11, R12, R13... px py pz
+    // sin(t) cos(t)  px py pz R11, R12, R13...
     constexpr int size = 2 + 3 + 9 + 3; // 17
 
     {% for type in types %}
