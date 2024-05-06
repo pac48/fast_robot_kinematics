@@ -23,7 +23,7 @@ namespace fast_fk::internal {
   };
 
 
-  void forward_kinematics_internal(double *input_data) {
+  void forward_kinematics_internal(double *input_data, size_t /*size*/) {
     // sin(t) cos(t)  px py pz R11, R12, R13...
     constexpr int size = 2 + 3 + 9 + 3; // 17
 

@@ -7,7 +7,7 @@
 namespace fast_fk {
   namespace internal {
     // input_data: sin(t) cos(t)  px py pz R11, R12, R13...
-    void forward_kinematics_internal(double *input_data);
+    void forward_kinematics_internal(double *input_data, size_t size);
 
     constexpr size_t joint_data_length = 17;
   }
@@ -51,7 +51,7 @@ namespace fast_fk {
   };
 
   void forward_kinematics(JointData &input_data) {
-    internal::forward_kinematics_internal(input_data.joint_data.data()->data());
+    internal::forward_kinematics_internal(input_data.joint_data.data()->data(), input_data.joint_data.size()*internal::joint_data_length);
   }
 
 }

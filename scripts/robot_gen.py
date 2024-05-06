@@ -4,6 +4,7 @@ from urdf_parser_py import urdf
 import argparse
 import numpy as np
 
+
 def run():
     parser = argparse.ArgumentParser()
     parser.add_argument('urdf_file')
@@ -77,6 +78,10 @@ def run():
         else:
             raise Exception(f"joint type {joint.type} in URDF not supported")
 
+    # truncate near zero values
+    offsets = [val * (np.abs(val) > 1E-5) for val in offsets]
+    rotations = [val * (np.abs(val) > 1E-5) for val in rotations]
+
     with open(args.fk_template, 'r') as f:
         j2_template = Template(f.read())
         code = j2_template.render({'rotations': rotations, 'offsets': offsets, 'types': types}, trim_blocks=True)
@@ -85,8 +90,6 @@ def run():
         f.write(code)
 
     print(f"FAST_FK_NUMBER_OF_JOINTS={len(types)}", end="")
-
-
 
 
 if __name__ == "__main__":
