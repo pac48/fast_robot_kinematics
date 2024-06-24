@@ -11,16 +11,7 @@ namespace fast_fk {
     public:
         Eigen::Matrix<double, 3, 3> target_rot_;
         Eigen::Vector<double, 3> target_pose_;
-
-        Eigen::Vector3d target_x_axis_;
-        Eigen::Vector3d target_y_axis_;
-        Eigen::Vector3d target_z_axis_;
-
-        Eigen::Vector3d target_x_;
-        Eigen::Vector3d target_y_;
-        Eigen::Vector3d target_z_;
-
-        double input_data[internal::joint_data_length * FAST_FK_NUMBER_OF_JOINTS];
+        JointData joint_data;
 
 
         InverseKinematics(Eigen::Matrix<double, 3, 3> target_rot,
