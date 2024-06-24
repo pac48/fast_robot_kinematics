@@ -314,7 +314,7 @@ double InverseKinematics::operator()(const Eigen::VectorXd &q, Eigen::VectorXd &
       Eigen::Vector<double, 3> delta = ee_pose-joint_pose;
       Eigen::Vector<double, 3> joint_axis;
       joint_axis << input_data[ind * data_size + 7], input_data[ind * data_size + 10], input_data[ind * data_size + 13];
-      Eigen::Vector<double, 3> jac_linear = delta.cross(joint_axis);
+      Eigen::Vector<double, 3> jac_linear = joint_axis.cross(delta);
       Eigen::Vector<double, 3> jac_angular = joint_axis;
 
       // x point

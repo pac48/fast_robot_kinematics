@@ -11,12 +11,12 @@
 #endif
 
 int main(int arc, char **argv) {
-    constexpr int iterations = 128;
+    constexpr int iterations = 128 * 128;
 
     // get target pose
-    Eigen::VectorXd q = Eigen::VectorXd::Random(FAST_FK_NUMBER_OF_JOINTS);
+    Eigen::VectorXd q_in = Eigen::VectorXd::Random(FAST_FK_NUMBER_OF_JOINTS);
     fast_fk::JointData joints;
-    joints.set_joints(q);
+    joints.set_joints(q_in);
     fast_fk::forward_kinematics(joints);
     Eigen::Matrix<double, 4, 4> tf;
     joints.get_frame(FAST_FK_NUMBER_OF_JOINTS - 1, tf);
@@ -32,16 +32,18 @@ int main(int arc, char **argv) {
 
     double fx;
     int niter;
-    for (int ind = 0; ind < 100; ++ind) {
-        q = Eigen::VectorXd::Random(FAST_FK_NUMBER_OF_JOINTS);
+    Eigen::VectorXd q = Eigen::VectorXd::Random(FAST_FK_NUMBER_OF_JOINTS);
+    for (int ind = 0; ind < iterations; ++ind) {
         niter = solver.minimize(fun, q, fx);
+//        std::cout << niter << " iterations" << std::endl;
+        q = Eigen::VectorXd::Random(FAST_FK_NUMBER_OF_JOINTS);
     }
 
     auto stop = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start);
 
     std::cout << "Time taken by function: " << (double) duration.count() << " nanoseconds" << std::endl;
-    std::cout << "Average: " << ((double) duration.count()) / (iterations * 128 * 128) << " nanoseconds"
+    std::cout << "Average: " << ((double) duration.count()) / (iterations) << " nanoseconds"
               << std::endl;
 
     return 0;
