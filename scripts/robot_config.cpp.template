@@ -242,7 +242,15 @@ namespace fast_fk {
     double InverseKinematics::operator()(const Eigen::VectorXd &q, Eigen::VectorXd &grad) {
 
         // construct input_data from q
-        joint_data.set_joints(q.data());
+        {% for type in types %}
+        {% if type == 'revolute' -%}
+        joint_data.joint_data[{{loop.index0}}][0] = std::sin(q[{{loop.index0}}]);
+        joint_data.joint_data[{{loop.index0}}][1] = std::cos(q[{{loop.index0}}]);
+        {%- elif type == 'prismatic' -%}
+        joint_data.joint_data[{{loop.index0}}][0] = q[{{loop.index0}}];
+        {%- endif %}
+        {%- endfor %}
+
         double *input_data = joint_data.joint_data.data()->data();
         internal::forward_kinematics_internal(input_data, data_size * {{rotations | length}});
 
@@ -321,6 +329,7 @@ namespace fast_fk {
         {% for type in types %}
         {
             constexpr std::size_t ind = {{loop.index0}};
+            {% if type == 'revolute' %}
             joint_pose[0] = input_data[ind * data_size + 2];
             joint_pose[1] = input_data[ind * data_size + 3];
             joint_pose[2] = input_data[ind * data_size + 4];
@@ -342,6 +351,21 @@ namespace fast_fk {
             // z point
             ddelta_z_dq_ind = jac_linear + jac_angular.cross(axis_scale * z_axis);
             grad[ind] -= dJ_ddelta_z.dot(ddelta_z_dq_ind);
+
+            {% elif type == 'prismatic' %}
+            joint_axis[0] = input_data[ind * data_size + 7];
+            joint_axis[1] = input_data[ind * data_size + 10];
+            joint_axis[2] = input_data[ind * data_size + 13];
+            // jac_linear is the joint axis
+            // x point
+            grad[ind] -= dJ_ddelta_x.dot(joint_axis);
+
+            // y point
+            grad[ind] -= dJ_ddelta_y.dot(joint_axis);
+
+            // z point
+            grad[ind] -= dJ_ddelta_z.dot(joint_axis);
+            {% endif %}
         }
         {% endfor %}
 

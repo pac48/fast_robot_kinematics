@@ -11,7 +11,11 @@
 #endif
 
 int main(int arc, char **argv) {
-    constexpr int iterations = 128 * 128;
+    unsigned seed = time(0);
+    srand(seed);
+    rand();
+
+    constexpr int iterations = 128 * 128 * 10;
 
     // get target pose
     Eigen::VectorXd q_in = Eigen::VectorXd::Random(FAST_FK_NUMBER_OF_JOINTS);
@@ -27,16 +31,28 @@ int main(int arc, char **argv) {
     LBFGSpp::LBFGSSolver<double> solver(param);
     fast_fk::InverseKinematics fun(target_rot, target_pose);
 
-
     auto start = std::chrono::high_resolution_clock::now();
 
     double fx;
     int niter;
-    Eigen::VectorXd q = Eigen::VectorXd::Random(FAST_FK_NUMBER_OF_JOINTS);
+    Eigen::VectorXd q = 1 * Eigen::VectorXd::Random(FAST_FK_NUMBER_OF_JOINTS);
     for (int ind = 0; ind < iterations; ++ind) {
-        niter = solver.minimize(fun, q, fx);
-//        std::cout << niter << " iterations" << std::endl;
         q = Eigen::VectorXd::Random(FAST_FK_NUMBER_OF_JOINTS);
+        try {
+            niter = solver.minimize(fun, q, fx);
+        } catch (const std::runtime_error &e) {
+            std::cout << " failed!!" << std::endl;
+            std::cout << "q: " << q.transpose() << std::endl;
+            std::cout << "q_in: " << q_in.transpose() << std::endl;
+            std::cout << niter << " iterations" << std::endl;
+            std::cout << "f(x) = " << fx << std::endl;
+            std::cout << "||grad|| = " << solver.final_grad_norm() << std::endl;
+            continue;
+        }
+
+//        std::cout << niter << " iterations" << std::endl;
+//        std::cout << "f(x) = " << fx << std::endl;
+//        std::cout << "||grad|| = " << solver.final_grad_norm() << std::endl;
     }
 
     auto stop = std::chrono::high_resolution_clock::now();
