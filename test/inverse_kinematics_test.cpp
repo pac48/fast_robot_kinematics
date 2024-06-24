@@ -40,10 +40,10 @@ int main(int arc, char **argv) {
     }
 
     auto stop = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start);
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
 
-    std::cout << "Time taken by function: " << (double) duration.count() << " nanoseconds" << std::endl;
-    std::cout << "Average: " << ((double) duration.count()) / (iterations) << " nanoseconds"
+    std::cout << "Time taken by function: " << (double) duration.count() << " microseconds" << std::endl;
+    std::cout << "Average: " << ((double) duration.count()) / (iterations) << " microseconds"
               << std::endl;
 
     return 0;

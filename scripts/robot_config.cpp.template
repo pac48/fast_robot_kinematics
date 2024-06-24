@@ -318,7 +318,9 @@ namespace fast_fk {
         Eigen::Vector3d ddelta_y_dq_ind;
         Eigen::Vector3d ddelta_z_dq_ind;
 
-        for (int ind = 0; ind < {{ rotations | length }}; ++ind) {
+        {% for type in types %}
+        {
+            constexpr std::size_t ind = {{loop.index0}};
             joint_pose[0] = input_data[ind * data_size + 2];
             joint_pose[1] = input_data[ind * data_size + 3];
             joint_pose[2] = input_data[ind * data_size + 4];
@@ -341,6 +343,7 @@ namespace fast_fk {
             ddelta_z_dq_ind = jac_linear + jac_angular.cross(axis_scale * z_axis);
             grad[ind] -= dJ_ddelta_z.dot(ddelta_z_dq_ind);
         }
+        {% endfor %}
 
         return fx;
     }
