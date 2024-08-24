@@ -1,5 +1,4 @@
-#ifndef FAST_FORWARD_KINEMATICS_HPP
-#define FAST_FORWARD_KINEMATICS_HPP
+#pragma once
 
 #include "array"
 #include "cmath"
@@ -7,43 +6,43 @@
 namespace fast_fk {
   namespace internal {
     // input_data: sin(t) cos(t)  px py pz R11, R12, R13...
-    void forward_kinematics_internal(double *input_data, size_t size);
+    void forward_kinematics_internal(float *input_data, size_t size);
 
-    constexpr size_t joint_data_length = 17;
+    constexpr size_t joint_data_length = 16;
   }
 
   struct JointData {
-    std::array<std::array<double, internal::joint_data_length>, FAST_FK_NUMBER_OF_JOINTS> joint_data = {0};
+    std::array<std::array<float, internal::joint_data_length>, FAST_FK_NUMBER_OF_JOINTS> joint_data = {0};
 
-    void set_joint(size_t ind, double value) {
+    void set_joint(size_t ind, float value) {
       joint_data[ind][0] = std::sin(value);
       joint_data[ind][1] = std::cos(value);
     }
 
-    void set_joints(const double *values) {
+    void set_joints(const float *values) {
       for (auto ind = 0; ind < FAST_FK_NUMBER_OF_JOINTS; ++ind) {
         joint_data[ind][0] = std::sin(values[ind]);
         joint_data[ind][1] = std::cos(values[ind]);
       }
     }
 
-    void set_joint(size_t ind, double sin_t, double cos_t) {
+    void set_joint(size_t ind, float sin_t, float cos_t) {
       joint_data[ind][0] = sin_t;
       joint_data[ind][1] = cos_t;
     }
 
-    void set_joints(const double *sin_values, const double *cos_values) {
+    void set_joints(const float *sin_values, const float *cos_values) {
       for (auto ind = 0; ind < FAST_FK_NUMBER_OF_JOINTS; ++ind) {
         joint_data[ind][0] = sin_values[ind];
         joint_data[ind][1] = cos_values[ind];
       }
     }
 
-    [[nodiscard]] double get_joint(size_t ind) const {
+    [[nodiscard]] float get_joint(size_t ind) const {
       return asin(joint_data[ind][0]);
     }
 
-    void get_joints(double *values) const {
+    void get_joints(float *values) const {
       for (auto ind = 0; ind < FAST_FK_NUMBER_OF_JOINTS; ++ind) {
         values[ind] = asin(joint_data[ind][0]);
       }
@@ -55,5 +54,3 @@ namespace fast_fk {
   }
 
 }
-
-#endif //FAST_FORWARD_KINEMATICS_HPP
