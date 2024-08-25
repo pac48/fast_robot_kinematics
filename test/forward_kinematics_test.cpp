@@ -1,13 +1,7 @@
 #include "chrono"
 #include "iostream"
 
-#ifdef FAST_FK_USE_EIGEN
-
 #include "forward_kinematics_eigen.hpp"
-
-#else
-#include "forward_kinematics.hpp"
-#endif
 
 int main(int arc, char **argv) {
     constexpr int iterations = 128 * 128;
@@ -24,15 +18,6 @@ int main(int arc, char **argv) {
         for (int k = 0; k < 128 * 128; k++) {
             joints.set_joints(rand_val);
             fast_fk::forward_kinematics(joints);
-
-
-            //    Eigen::Matrix4d transform;
-//    for (auto ind_debug = 0 ; ind_debug<6; ind_debug++){
-//      joints.get_frame(ind_debug, transform);
-//      std::cout << transform <<"\n\n";
-//    }
-
-//    break;
         }
     }
 

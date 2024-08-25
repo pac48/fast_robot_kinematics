@@ -1,29 +1,28 @@
-#pragma once
+#include "array"
 
-#include "forward_kinematics.hpp"
 
 namespace fast_fk::internal {
 
-  // row major
-  constexpr std::array<float, {{rotations|length}}* 9> R_all = {
-    {%- for rotation in rotations %}
-    {%- for row in rotation %}
-    {%- for val in row %} {{val}},
-    {%- endfor %}
-    {% endfor %}
-    {%- endfor -%}
-  };
+  void forward_kinematics_internal(float *input_data, std::size_t /*size*/) {
+
+      // row major
+      constexpr std::array<float, {{rotations|length}}* 9> R_all = {
+              {%- for rotation in rotations %}
+              {%- for row in rotation %}
+              {%- for val in row %} {{val}},
+              {%- endfor %}
+              {% endfor %}
+              {%- endfor -%}
+      };
 
 
-  constexpr std::array<float, {{rotations|length}}* 3> offset_all = {
-    {%- for offset in offsets %}
-    {%- for val in offset %} {{val}},
-    {%- endfor %}
-    {% endfor -%}
-  };
+      constexpr std::array<float, {{rotations|length}}* 3> offset_all = {
+              {%- for offset in offsets %}
+              {%- for val in offset %} {{val}},
+              {%- endfor %}
+              {% endfor -%}
+      };
 
-
-  void forward_kinematics_internal(float *input_data, size_t /*size*/) {
     // sin(t) cos(t)  px py pz R11, R12, R13...
     constexpr int size = 2 + 3 + 9; // 14
       float tmp1;
