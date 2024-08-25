@@ -13,6 +13,17 @@ function(generate_fast_forward_kinematics_library URDF_FILE ROOT_LINK TIP_LINK)
             OUTPUT_STRIP_TRAILING_WHITESPACE
     )
 
+    include(ExternalProject)
+    ExternalProject_Add(
+            LBFGSpp
+            PREFIX ${CMAKE_BINARY_DIR}/LBFGSpp
+            GIT_REPOSITORY https://github.com/yixuan/LBFGSpp.git
+            GIT_TAG master
+            CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}
+    )
+    ExternalProject_Get_Property(LBFGSpp source_dir)
+    set(LBFGSppIncludeDir ${source_dir}/include)
+
     add_custom_command(
             OUTPUT forward_kinematics_lib.cpp
             COMMAND ${Python_EXECUTABLE} ${CMAKE_SOURCE_DIR}/scripts/robot_gen.py ${URDF_FILE} ${CMAKE_SOURCE_DIR}/scripts/robot_config.cpp.template
@@ -30,5 +41,9 @@ function(generate_fast_forward_kinematics_library URDF_FILE ROOT_LINK TIP_LINK)
     set_target_properties(fast_forward_kinematics_library PROPERTIES CMAKE_BUILD_TYPE Release)
     find_package(Eigen3 3.3 NO_MODULE)
     target_link_libraries(fast_forward_kinematics_library PUBLIC Eigen3::Eigen)
+    add_dependencies(fast_forward_kinematics_library LBFGSpp)
+    target_link_libraries(fast_forward_kinematics_library PUBLIC Eigen3::Eigen)
+    target_include_directories(fast_forward_kinematics_library PUBLIC ${LBFGSppIncludeDir})
+
 
 endfunction()

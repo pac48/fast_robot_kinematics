@@ -1,7 +1,9 @@
-#include "array"
-
+#include "forward_kinematics_eigen.hpp"
+#include "inverse_kinematics_eigen.hpp"
 
 namespace fast_fk::internal {
+    // sin(t) cos(t)  px py pz R11, R12, R13...
+    constexpr int data_size = 2 + 3 + 9+2; // 16
 
   void forward_kinematics_internal(float *input_data, std::size_t /*size*/) {
 
@@ -15,7 +17,6 @@ namespace fast_fk::internal {
               {%- endfor -%}
       };
 
-
       constexpr std::array<float, {{rotations|length}}* 3> offset_all = {
               {%- for offset in offsets %}
               {%- for val in offset %} {{val}},
@@ -23,220 +24,214 @@ namespace fast_fk::internal {
               {% endfor -%}
       };
 
-    // sin(t) cos(t)  px py pz R11, R12, R13...
-    constexpr int size = 2 + 3 + 9; // 14
       float tmp1;
       float tmp2;
       float tmp3;
 
-    {% for type in types %}
-    {
-      constexpr std::size_t ind = {{loop.index0}};
+      {% for type in types %}
+      {
+          constexpr std::size_t ind = {{loop.index0}};
 
-      // R_fixed is the rotation from joint_i+1 in frame joint_i (row major)
-      const float &R11_fixed = R_all[ind * 9 + 0];
-      const float &R21_fixed = R_all[ind * 9 + 1];
-      const float &R31_fixed = R_all[ind * 9 + 2];
-      const float &R12_fixed = R_all[ind * 9 + 3];
-      const float &R22_fixed = R_all[ind * 9 + 4];
-      const float &R32_fixed = R_all[ind * 9 + 5];
-      const float &R13_fixed = R_all[ind * 9 + 6];
-      const float &R23_fixed = R_all[ind * 9 + 7];
-      const float &R33_fixed = R_all[ind * 9 + 8];
+          // R_fixed is the rotation from joint_i+1 in frame joint_i (row major)
+          const float &R11_fixed = R_all[ind * 9 + 0];
+          const float &R21_fixed = R_all[ind * 9 + 1];
+          const float &R31_fixed = R_all[ind * 9 + 2];
+          const float &R12_fixed = R_all[ind * 9 + 3];
+          const float &R22_fixed = R_all[ind * 9 + 4];
+          const float &R32_fixed = R_all[ind * 9 + 5];
+          const float &R13_fixed = R_all[ind * 9 + 6];
+          const float &R23_fixed = R_all[ind * 9 + 7];
+          const float &R33_fixed = R_all[ind * 9 + 8];
 
-      // offset is the offset of joint_i+1 in frame joint_i
-      const float &offset_x = offset_all[ind * 3 + 0];
-      const float &offset_y = offset_all[ind * 3 + 1];
-      const float &offset_z = offset_all[ind * 3 + 2];
+          // offset is the offset of joint_i+1 in frame joint_i
+          const float &offset_x = offset_all[ind * 3 + 0];
+          const float &offset_y = offset_all[ind * 3 + 1];
+          const float &offset_z = offset_all[ind * 3 + 2];
 
-      // R is the rotation from joint_i+1 in the base frame (row major)
-      float &R11 = input_data[ind * size + 5];
-      float &R12 = input_data[ind * size + 6];
-      float &R13 = input_data[ind * size + 7];
-      float &R21 = input_data[ind * size + 8];
-      float &R22 = input_data[ind * size + 9];
-      float &R23 = input_data[ind * size + 10];
-      float &R31 = input_data[ind * size + 11];
-      float &R32 = input_data[ind * size + 12];
-      float &R33 = input_data[ind * size + 13];
+          // R is the rotation from joint_i+1 in the base frame (row major)
+          float &R11 = input_data[ind * data_size + 5];
+          float &R12 = input_data[ind * data_size + 6];
+          float &R13 = input_data[ind * data_size + 7];
+          float &R21 = input_data[ind * data_size + 8];
+          float &R22 = input_data[ind * data_size + 9];
+          float &R23 = input_data[ind * data_size + 10];
+          float &R31 = input_data[ind * data_size + 11];
+          float &R32 = input_data[ind * data_size + 12];
+          float &R33 = input_data[ind * data_size + 13];
 
-      {% if type=='revolute' %}
-      const float &sin_t = input_data[ind * size + 0];
-      const float &cos_t = input_data[ind * size + 1];
-      {% if loop.index0==0 %}
-      // rotate offset to be in base frame
-      input_data[ind * size + 2] = offset_x;
-      input_data[ind * size + 3] = offset_y;
-      input_data[ind * size + 4] = offset_z;
+          {% if type == 'revolute' %}
+          const float &sin_t = input_data[ind * data_size + 0];
+          const float &cos_t = input_data[ind * data_size + 1];
+          {% if loop.index0 == 0 %}
+          // apply revolute rotation to R_fixed and store in joint to base rotation R
+          R11 = R11_fixed * cos_t + R12_fixed * sin_t;
+          R12 = -R11_fixed * sin_t + R12_fixed * cos_t;
+          R13 = R13_fixed;
+          R21 = R21_fixed * cos_t + R22_fixed * sin_t;
+          R22 = -R21_fixed * sin_t + R22_fixed * cos_t;
+          R23 = R23_fixed;
+          R31 = R31_fixed * cos_t + R32_fixed * sin_t;
+          R32 = -R31_fixed * sin_t + R32_fixed * cos_t;
+          R33 = R33_fixed;
 
-      // apply revolute rotation to R_fixed and store in joint to base rotation R
-      R11 = R11_fixed * cos_t + R12_fixed * sin_t;
-      R12 = -R11_fixed * sin_t + R12_fixed * cos_t;
-      R13 = R13_fixed;
-      R21 = R21_fixed * cos_t + R22_fixed * sin_t;
-      R22 = -R21_fixed * sin_t + R22_fixed * cos_t;
-      R23 = R23_fixed;
-      R31 = R31_fixed * cos_t + R32_fixed * sin_t;
-      R32 = -R31_fixed * sin_t + R32_fixed * cos_t;
-      R33 = R33_fixed;
+          // rotate offset to be in base frame
+          input_data[ind * data_size + 2] = offset_x;
+          input_data[ind * data_size + 3] = offset_y;
+          input_data[ind * data_size + 4] = offset_z;
 
-      {% else %}
-      // R_old is the rotation from joint_i in base frame (row major)
-      float &R11_old = input_data[(ind - 1) * size + 5];
-      float &R21_old = input_data[(ind - 1) * size + 6];
-      float &R31_old = input_data[(ind - 1) * size + 7];
-      float &R12_old = input_data[(ind - 1) * size + 8];
-      float &R22_old = input_data[(ind - 1) * size + 9];
-      float &R32_old = input_data[(ind - 1) * size + 10];
-      float &R13_old = input_data[(ind - 1) * size + 11];
-      float &R23_old = input_data[(ind - 1) * size + 12];
-      float &R33_old = input_data[(ind - 1) * size + 13];
+          {% else %}
+          // R_old is the rotation from joint_i in base frame (column major)
+          float &R11_old = input_data[(ind - 1) * data_size + 5];
+          float &R12_old = input_data[(ind - 1) * data_size + 6];
+          float &R13_old = input_data[(ind - 1) * data_size + 7];
+          float &R21_old = input_data[(ind - 1) * data_size + 8];
+          float &R22_old = input_data[(ind - 1) * data_size + 9];
+          float &R23_old = input_data[(ind - 1) * data_size + 10];
+          float &R31_old = input_data[(ind - 1) * data_size + 11];
+          float &R32_old = input_data[(ind - 1) * data_size + 12];
+          float &R33_old = input_data[(ind - 1) * data_size + 13];
 
-        // p_old is the position of joint_i in base frame
-        const float &px_old = input_data[(ind - 1) * size + 2];
-        const float &py_old = input_data[(ind - 1) * size + 3];
-        const float &pz_old = input_data[(ind - 1) * size + 4];
+          // R_tmp is the rotation from joint_i+1 in frame joint_i after rotation applied (column major)
+          float &R11_tmp = input_data[ind * data_size + 5];
+          float &R12_tmp = input_data[ind * data_size + 6];
+          float &R13_tmp = input_data[ind * data_size + 7];
+          float &R21_tmp = input_data[ind * data_size + 8];
+          float &R22_tmp = input_data[ind * data_size + 9];
+          float &R23_tmp = input_data[ind * data_size + 10];
+          float &R31_tmp = input_data[ind * data_size + 11];
+          float &R32_tmp = input_data[ind * data_size + 12];
+          float &R33_tmp = input_data[ind * data_size + 13];
 
-        // rotate offset to be in base frame and add p_old
-        tmp1 = R11_old * offset_x + R12_old * offset_y + R13_old * offset_z + px_old;
-        tmp2 = R21_old * offset_x + R22_old * offset_y + R23_old * offset_z + py_old;
-        tmp3 = R31_old * offset_x + R32_old * offset_y + R33_old * offset_z + pz_old;
-        input_data[ind * size + 2] = tmp1;
-        input_data[ind * size + 3] = tmp2;
-        input_data[ind * size + 4] = tmp3;
+          // apply revolute rotation to R11_fixed and store in R11_tmp
+          R11_tmp = R11_fixed * cos_t + R12_fixed * sin_t;
+          R12_tmp = -R11_fixed * sin_t + R12_fixed * cos_t;
+          R13_tmp = R13_fixed;
+          R21_tmp = R21_fixed * cos_t + R22_fixed * sin_t;
+          R22_tmp = -R21_fixed * sin_t + R22_fixed * cos_t;
+          R23_tmp = R23_fixed;
+          R31_tmp = R31_fixed * cos_t + R32_fixed * sin_t;
+          R32_tmp = -R31_fixed * sin_t + R32_fixed * cos_t;
+          R33_tmp = R33_fixed;
 
-      // R_tmp is the rotation from joint_i+1 in frame joint_i after rotation applied (column major)
-      float &R11_tmp = input_data[ind * size + 5];
-      float &R12_tmp = input_data[ind * size + 6];
-      float &R13_tmp = input_data[ind * size + 7];
-      float &R21_tmp = input_data[ind * size + 8];
-      float &R22_tmp = input_data[ind * size + 9];
-      float &R23_tmp = input_data[ind * size + 10];
-      float &R31_tmp = input_data[ind * size + 11];
-      float &R32_tmp = input_data[ind * size + 12];
-      float &R33_tmp = input_data[ind * size + 13];
+          // apply R11_old rotation R11_tmp, to make it in base frame
+          tmp1 = R11_old * R11_tmp + R12_old * R21_tmp + R13_old * R31_tmp;
+          tmp2 = R21_old * R11_tmp + R22_old * R21_tmp + R23_old * R31_tmp;
+          tmp3 = R31_old * R11_tmp + R32_old * R21_tmp + R33_old * R31_tmp;
+          R11 = tmp1;
+          R21 = tmp2;
+          R31 = tmp3;
+          tmp1 = R11_old * R12_tmp + R12_old * R22_tmp + R13_old * R32_tmp;
+          tmp2 = R21_old * R12_tmp + R22_old * R22_tmp + R23_old * R32_tmp;
+          tmp3 = R31_old * R12_tmp + R32_old * R22_tmp + R33_old * R32_tmp;
+          R12 = tmp1;
+          R22 = tmp2;
+          R32 = tmp3;
+          tmp1 = R11_old * R13_tmp + R12_old * R23_tmp + R13_old * R33_tmp;
+          tmp2 = R21_old * R13_tmp + R22_old * R23_tmp + R23_old * R33_tmp;
+          tmp3 = R31_old * R13_tmp + R32_old * R23_tmp + R33_old * R33_tmp;
+          R13 = tmp1;
+          R23 = tmp2;
+          R33 = tmp3;
 
-      // apply revolute rotation to R11_fixed and store in R11_tmp
-      R11_tmp = R11_fixed * cos_t + R12_fixed * sin_t;
-      R12_tmp = -R11_fixed * sin_t + R12_fixed * cos_t;
-      R13_tmp = R13_fixed;
-      R21_tmp = R21_fixed * cos_t + R22_fixed * sin_t;
-      R22_tmp = -R21_fixed * sin_t + R22_fixed * cos_t;
-      R23_tmp = R23_fixed;
-      R31_tmp = R31_fixed * cos_t + R32_fixed * sin_t;
-      R32_tmp = -R31_fixed * sin_t + R32_fixed * cos_t;
-      R33_tmp = R33_fixed;
+          // p_old is the position of joint_i in base frame
+          const float &px_old = input_data[(ind - 1) * data_size + 2];
+          const float &py_old = input_data[(ind - 1) * data_size + 3];
+          const float &pz_old = input_data[(ind - 1) * data_size + 4];
 
-      // tmp used to store temporary results of apply R_old + R_tmp (build column major)
-      tmp1 = input_data[ind * size + 14];
-      tmp2 = input_data[ind * size + 15];
-      tmp3 = input_data[ind * size + 16];
+          // rotate offset to be in base frame and add p_old
+          tmp1 = R11_old * offset_x + R12_old * offset_y + R13_old * offset_z + px_old;
+          tmp2 = R21_old * offset_x + R22_old * offset_y + R23_old * offset_z + py_old;
+          tmp3 = R31_old * offset_x + R32_old * offset_y + R33_old * offset_z + pz_old;
+          input_data[ind * data_size + 2] = tmp1;
+          input_data[ind * data_size + 3] = tmp2;
+          input_data[ind * data_size + 4] = tmp3;
+          {% endif %}
 
-      // apply R11_old rotation R11_tmp, to make it in base frame
-      tmp1 = R11_old * R11_tmp + R12_old * R21_tmp + R13_old * R31_tmp;
-      tmp2 = R21_old * R11_tmp + R22_old * R21_tmp + R23_old * R31_tmp;
-      tmp3 = R31_old * R11_tmp + R32_old * R21_tmp + R33_old * R31_tmp;
-      R11 = tmp1;
-      R21 = tmp2;
-      R31 = tmp3;
-      tmp1 = R11_old * R12_tmp + R12_old * R22_tmp + R13_old * R32_tmp;
-      tmp2 = R21_old * R12_tmp + R22_old * R22_tmp + R23_old * R32_tmp;
-      tmp3 = R31_old * R12_tmp + R32_old * R22_tmp + R33_old * R32_tmp;
-      R12 = tmp1;
-      R22 = tmp2;
-      R32 = tmp3;
-      tmp1 = R11_old * R13_tmp + R12_old * R23_tmp + R13_old * R33_tmp;
-      tmp2 = R21_old * R13_tmp + R22_old * R23_tmp + R23_old * R33_tmp;
-      tmp3 = R31_old * R13_tmp + R32_old * R23_tmp + R33_old * R33_tmp;
-      R13 = tmp1;
-      R23 = tmp2;
-      R33 = tmp3;
+          {% elif type == 'prismatic' %}
+          {% if loop.index0 == 0 %}
+          // copy fixed rotation into joint to base rotation
+          R11 = R11_fixed;
+          R12 = R12_fixed;
+          R13 = R13_fixed;
+          R21 = R21_fixed;
+          R22 = R22_fixed;
+          R23 = R23_fixed;
+          R31 = R31_fixed;
+          R32 = R32_fixed;
+          R33 = R33_fixed;
 
+          // add offset and prismatic actuation in base frame
+          const float &linear = input_data[ind * data_size + 0];
+          input_data[ind * data_size + 2] = R13_fixed * linear + offset_x;
+          input_data[ind * data_size + 3] = R23_fixed * linear + offset_y;
+          input_data[ind * data_size + 4] = R33_fixed * linear + offset_z;
 
-      {% endif %}
+          {% else %}
+          // R_old is the rotation from joint_i in base frame (row major)
+          float &R11_old = input_data[(ind - 1) * data_size + 5];
+          float &R12_old = input_data[(ind - 1) * data_size + 6];
+          float &R13_old = input_data[(ind - 1) * data_size + 7];
+          float &R21_old = input_data[(ind - 1) * data_size + 8];
+          float &R22_old = input_data[(ind - 1) * data_size + 9];
+          float &R23_old = input_data[(ind - 1) * data_size + 10];
+          float &R31_old = input_data[(ind - 1) * data_size + 11];
+          float &R32_old = input_data[(ind - 1) * data_size + 12];
+          float &R33_old = input_data[(ind - 1) * data_size + 13];
 
-      {% elif type=='prismatic' %}
-      {% if loop.index0==0 %}
-      // add offset and prismatic actuation in base frame
-      const float &linear = input_data[ind * size + 0];
-      input_data[ind * size + 2] = R13_fixed * linear + offset_x;
-      input_data[ind * size + 3] = R23_fixed * linear + offset_y;
-      input_data[ind * size + 4] = R33_fixed * linear + offset_z;
+          // apply R11_old rotation R11_fixed, to make it in base frame
+          tmp1 = R11_old * R11_fixed + R12_old * R21_fixed + R13_old * R31_fixed;
+          tmp2 = R21_old * R11_fixed + R22_old * R21_fixed + R23_old * R31_fixed;
+          tmp3 = R31_old * R11_fixed + R32_old * R21_fixed + R33_old * R31_fixed;
+          R11 = tmp1;
+          R21 = tmp2;
+          R31 = tmp3;
+          tmp1 = R11_old * R12_fixed + R12_old * R22_fixed + R13_old * R32_fixed;
+          tmp2 = R21_old * R12_fixed + R22_old * R22_fixed + R23_old * R32_fixed;
+          tmp3 = R31_old * R12_fixed + R32_old * R22_fixed + R33_old * R32_fixed;
+          R12 = tmp1;
+          R22 = tmp2;
+          R32 = tmp3;
+          tmp1 = R11_old * R13_fixed + R12_old * R23_fixed + R13_old * R33_fixed;
+          tmp2 = R21_old * R13_fixed + R22_old * R23_fixed + R23_old * R33_fixed;
+          tmp3 = R31_old * R13_fixed + R32_old * R23_fixed + R33_old * R33_fixed;
+          R13 = tmp1;
+          R23 = tmp2;
+          R33 = tmp3;
 
-      // copy fixed rotation into joint to base rotation
-      R11 = R11_fixed;
-      R12 = R12_fixed;
-      R13 = R13_fixed;
-      R21 = R21_fixed;
-      R22 = R22_fixed;
-      R23 = R23_fixed;
-      R31 = R31_fixed;
-      R32 = R32_fixed;
-      R33 = R33_fixed;
+          // rotate offset to be in base frame
+          tmp1 = R11_old * offset_x + R12_old * offset_y + R13_old * offset_z;
+          tmp2 = R21_old * offset_x + R22_old * offset_y + R23_old * offset_z;
+          tmp3 = R31_old * offset_x + R32_old * offset_y + R33_old * offset_z;
 
-      {% else %}
-      // R_old is the rotation from joint_i in base frame (column major)
-      float &R11_old = input_data[(ind - 1) * size + 5];
-      float &R12_old = input_data[(ind - 1) * size + 6];
-      float &R13_old = input_data[(ind - 1) * size + 7];
-      float &R21_old = input_data[(ind - 1) * size + 8];
-      float &R22_old = input_data[(ind - 1) * size + 9];
-      float &R23_old = input_data[(ind - 1) * size + 10];
-      float &R31_old = input_data[(ind - 1) * size + 11];
-      float &R32_old = input_data[(ind - 1) * size + 12];
-      float &R33_old = input_data[(ind - 1) * size + 13];
-
-      const float &px_old = input_data[(ind - 1) * size + 2];
-      const float &py_old = input_data[(ind - 1) * size + 3];
-      const float &pz_old = input_data[(ind - 1) * size + 4];
-      const float &linear = input_data[ind * size + 0];
-
-      tmp1 = input_data[ind * size + 14];
-      tmp2 = input_data[ind * size + 15];
-      tmp3 = input_data[ind * size + 16];
-
-      // apply R11_old rotation R11_fixed, to make it in base frame
-        R11 = R11_old * R11_fixed + R12_old * R21_fixed + R13_old * R31_fixed;
-        R21 = R21_old * R11_fixed + R22_old * R21_fixed + R23_old * R31_fixed;
-        R31 = R31_old * R11_fixed + R32_old * R21_fixed + R33_old * R31_fixed;
-        R12 = R11_old * R12_fixed + R12_old * R22_fixed + R13_old * R32_fixed;
-        R22 = R21_old * R12_fixed + R22_old * R22_fixed + R23_old * R32_fixed;
-        R32 = R31_old * R12_fixed + R32_old * R22_fixed + R33_old * R32_fixed;
-        R13 = R11_old * R13_fixed + R12_old * R23_fixed + R13_old * R33_fixed;
-        R23 = R21_old * R13_fixed + R22_old * R23_fixed + R23_old * R33_fixed;
-        R33 = R31_old * R13_fixed + R32_old * R23_fixed + R33_old * R33_fixed;
-
-      // rotate offset to be in base frame
-      tmp1 = R11_old * offset_x + R12_old * offset_y + R13_old * offset_z;
-      tmp2 = R21_old * offset_x + R22_old * offset_y + R23_old * offset_z ;
-      tmp3 = R31_old * offset_x + R32_old * offset_y + R33_old * offset_z ;
-
-      // add offset, prismatic actuation, and old position in base frame
-      input_data[ind * size + 2] = tmp1 + R13_old * linear + px_old;
-      input_data[ind * size + 3] = tmp2 + R23_old * linear + py_old;
-      input_data[ind * size + 4] = tmp3 + R33_old * linear + pz_old;
-      {% endif %}
-      {% endif %}
-    }
-    {% endfor %}
+          // add offset, prismatic actuation, and old position in base frame
+          const float &px_old = input_data[(ind - 1) * data_size + 2];
+          const float &py_old = input_data[(ind - 1) * data_size + 3];
+          const float &pz_old = input_data[(ind - 1) * data_size + 4];
+          const float &linear = input_data[ind * data_size + 0];
+          input_data[ind * data_size + 2] = tmp1 + R13_old * linear + px_old;
+          input_data[ind * data_size + 3] = tmp2 + R23_old * linear + py_old;
+          input_data[ind * data_size + 4] = tmp3 + R33_old * linear + pz_old;
+          {% endif %}
+          {% endif %}
+      }
+      {% endfor %}
   }
 
 }
 
 
 namespace fast_fk {
-    constexpr int data_size = 2 + 3 + 9 + 3; // 17
-    constexpr double axis_scale = 1;
+    constexpr float axis_scale = 1;
 
-    InverseKinematics::InverseKinematics(Eigen::Matrix<double, 3, 3> target_rot,
-                                         const Eigen::Vector<double, 3> &target_pose)
+    InverseKinematics::InverseKinematics(Eigen::Matrix<float, 3, 3> target_rot,
+                                         const Eigen::Vector<float, 3> &target_pose)
             : target_rot_{std::move(target_rot)}, target_pose_{target_pose} {
 
 
     }
 
-    double InverseKinematics::operator()(const Eigen::VectorXd &q, Eigen::VectorXd &grad) {
-
+    float InverseKinematics::operator()(const Eigen::VectorX<float> &q, Eigen::VectorX<float> &grad) {
+        auto & data_size = internal::data_size;
         // construct input_data from q
         {% for type in types %}
         {% if type == 'revolute' -%}
@@ -247,43 +242,43 @@ namespace fast_fk {
         {%- endif %}
         {%- endfor %}
 
-        double *input_data = joint_data.joint_data.data()->data();
+        float *input_data = joint_data.joint_data.data()->data();
         internal::forward_kinematics_internal(input_data, data_size * {{rotations | length}});
 
-        Eigen::Vector3d target_x_axis_ = target_rot_.block<3, 1>(0, 0);
-        Eigen::Vector3d target_y_axis_ = target_rot_.block<3, 1>(0, 1);
-        Eigen::Vector3d target_z_axis_ = target_rot_.block<3, 1>(0, 2);
-        Eigen::Vector3d target_x_ = target_pose_ + axis_scale * target_x_axis_;
-        Eigen::Vector3d target_y_ = target_pose_ + axis_scale * target_y_axis_;
-        Eigen::Vector3d target_z_ = target_pose_ + axis_scale * target_z_axis_;
+        Eigen::Vector3<float> target_x_axis_ = target_rot_.block<3, 1>(0, 0);
+        Eigen::Vector3<float> target_y_axis_ = target_rot_.block<3, 1>(0, 1);
+        Eigen::Vector3<float> target_z_axis_ = target_rot_.block<3, 1>(0, 2);
+        Eigen::Vector3<float> target_x_ = target_pose_ + axis_scale * target_x_axis_;
+        Eigen::Vector3<float> target_y_ = target_pose_ + axis_scale * target_y_axis_;
+        Eigen::Vector3<float> target_z_ = target_pose_ + axis_scale * target_z_axis_;
 
 
-        Eigen::Vector<double, 3> ee_pose;
+        Eigen::Vector<float, 3> ee_pose;
         ee_pose << input_data[({{ rotations | length }} - 1) *data_size + 2], input_data[({{ rotations | length }} - 1)
         *data_size + 3], input_data[({{ rotations | length }} - 1) *data_size + 4];
 
         // x point
-        Eigen::Vector<double, 3> x_axis;
+        Eigen::Vector<float, 3> x_axis;
         x_axis << input_data[({{ rotations | length }} - 1) *data_size + 5], input_data[({{ rotations | length }} - 1)
         *data_size + 8], input_data[({{ rotations | length }} - 1) *data_size + 11];
-        Eigen::Vector<double, 3> current_x = ee_pose + x_axis;
+        Eigen::Vector<float, 3> current_x = ee_pose + x_axis;
 
         // y point
-        Eigen::Vector<double, 3> y_axis;
+        Eigen::Vector<float, 3> y_axis;
         y_axis << input_data[({{ rotations | length }} - 1) *data_size + 6], input_data[({{ rotations | length }} - 1)
         *data_size + 9], input_data[({{ rotations | length }} - 1) *data_size + 12];
-        Eigen::Vector<double, 3> current_y = ee_pose + y_axis;
+        Eigen::Vector<float, 3> current_y = ee_pose + y_axis;
 
         // z point
-        Eigen::Vector<double, 3> z_axis;
+        Eigen::Vector<float, 3> z_axis;
         z_axis << input_data[({{ rotations | length }} - 1) *data_size + 7], input_data[({{ rotations | length }} - 1)
         *data_size + 10], input_data[({{ rotations | length }} - 1) *data_size + 13];
-        Eigen::Vector<double, 3> current_z = ee_pose + z_axis;
+        Eigen::Vector<float, 3> current_z = ee_pose + z_axis;
 
-        double fx = 0.0;
-        Eigen::Vector3d delta_x = target_x_.array() - current_x.array();
-        Eigen::Vector3d delta_y = target_y_.array() - current_y.array();
-        Eigen::Vector3d delta_z = target_z_.array() - current_z.array();
+        float fx = 0.0;
+        Eigen::Vector3<float> delta_x = target_x_.array() - current_x.array();
+        Eigen::Vector3<float> delta_y = target_y_.array() - current_y.array();
+        Eigen::Vector3<float> delta_z = target_z_.array() - current_z.array();
         fx += (delta_x.array() * delta_x.array()).sum();
         fx += (delta_y.array() * delta_y.array()).sum();
         fx += (delta_z.array() * delta_z.array()).sum();
@@ -309,18 +304,18 @@ namespace fast_fk {
 
         // gradient
         grad *= 0;
-        Eigen::Vector3d dJ_ddelta_x = 2 * delta_x;
-        Eigen::Vector3d dJ_ddelta_y = 2 * delta_y;
-        Eigen::Vector3d dJ_ddelta_z = 2 * delta_z;
+        Eigen::Vector3<float> dJ_ddelta_x = 2 * delta_x;
+        Eigen::Vector3<float> dJ_ddelta_y = 2 * delta_y;
+        Eigen::Vector3<float> dJ_ddelta_z = 2 * delta_z;
 
-        Eigen::Vector<double, 3> joint_pose;
-        Eigen::Vector<double, 3> delta;
-        Eigen::Vector<double, 3> joint_axis;
-        Eigen::Vector<double, 3> jac_linear;
-        Eigen::Vector<double, 3> jac_angular;
-        Eigen::Vector3d ddelta_x_dq_ind;
-        Eigen::Vector3d ddelta_y_dq_ind;
-        Eigen::Vector3d ddelta_z_dq_ind;
+        Eigen::Vector<float, 3> joint_pose;
+        Eigen::Vector<float, 3> delta;
+        Eigen::Vector<float, 3> joint_axis;
+        Eigen::Vector<float, 3> jac_linear;
+        Eigen::Vector<float, 3> jac_angular;
+        Eigen::Vector3<float> ddelta_x_dq_ind;
+        Eigen::Vector3<float> ddelta_y_dq_ind;
+        Eigen::Vector3<float> ddelta_z_dq_ind;
 
         {% for type in types %}
         {
