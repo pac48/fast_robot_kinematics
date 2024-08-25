@@ -17,7 +17,7 @@ int main(int arc, char **argv) {
         auto &rand_val = rand_values[i];
         for (int k = 0; k < 128 * 128; k++) {
             joints.set_joints(rand_val);
-            fast_fk::forward_kinematics(joints);
+            joints.forward_kinematics();
         }
     }
 

@@ -16,7 +16,7 @@ int main(int arc, char **argv) {
     Eigen::VectorX<float> q_in = Eigen::VectorX<float>::Random(FAST_FK_NUMBER_OF_JOINTS);
     fast_fk::JointData joints;
     joints.set_joints(q_in);
-    fast_fk::forward_kinematics(joints);
+    joints.forward_kinematics();
     Eigen::Matrix<float, 4, 4> tf;
     joints.get_frame(FAST_FK_NUMBER_OF_JOINTS - 1, tf);
     Eigen::Matrix<float, 3, 3> target_rot = tf.block<3, 3>(0, 0);

@@ -83,11 +83,12 @@ namespace fast_fk {
       transform(3, 2) = 0.0;
       transform(3, 3) = 1.0;
     }
+
+      void forward_kinematics() {
+          internal::forward_kinematics_internal(joint_data.data()->data(), joint_data.size()*internal::joint_data_length);
+      }
   };
 
 
-  void forward_kinematics(JointData &input_data) {
-    internal::forward_kinematics_internal(input_data.joint_data.data()->data(), input_data.joint_data.size()*internal::joint_data_length);
-  }
 
 }

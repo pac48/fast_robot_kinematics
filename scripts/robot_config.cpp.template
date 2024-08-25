@@ -230,10 +230,15 @@ namespace fast_fk {
     float InverseKinematics::operator()(const Eigen::VectorX<float> &q, Eigen::VectorX<float> &grad) {
         auto & data_size = internal::data_size;
         // construct input_data from q
+        float tmp1;
+        float tmp2;
+
         {% for type in types %}
         {% if type == 'revolute' -%}
-        joint_data.joint_data[{{loop.index0}}][0] = std::sin(q[{{loop.index0}}]);
-        joint_data.joint_data[{{loop.index0}}][1] = std::cos(q[{{loop.index0}}]);
+        tmp1 = q[{{loop.index0}}];
+        tmp2 = q[{{loop.index0}}];
+        joint_data.joint_data[{{loop.index0}}][0] = std::sin(tmp1);
+        joint_data.joint_data[{{loop.index0}}][1] = std::cos(tmp2);
         {%- elif type == 'prismatic' -%}
         joint_data.joint_data[{{loop.index0}}][0] = q[{{loop.index0}}];
         {%- endif %}
