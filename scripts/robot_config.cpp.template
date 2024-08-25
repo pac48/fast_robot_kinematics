@@ -222,3 +222,151 @@ namespace fast_fk::internal {
   }
 
 }
+
+
+namespace fast_fk {
+    constexpr int data_size = 2 + 3 + 9 + 3; // 17
+    constexpr double axis_scale = 1;
+
+    InverseKinematics::InverseKinematics(Eigen::Matrix<double, 3, 3> target_rot,
+                                         const Eigen::Vector<double, 3> &target_pose)
+            : target_rot_{std::move(target_rot)}, target_pose_{target_pose} {
+
+
+    }
+
+    double InverseKinematics::operator()(const Eigen::VectorXd &q, Eigen::VectorXd &grad) {
+
+        // construct input_data from q
+        {% for type in types %}
+        {% if type == 'revolute' -%}
+        joint_data.joint_data[{{loop.index0}}][0] = std::sin(q[{{loop.index0}}]);
+        joint_data.joint_data[{{loop.index0}}][1] = std::cos(q[{{loop.index0}}]);
+        {%- elif type == 'prismatic' -%}
+        joint_data.joint_data[{{loop.index0}}][0] = q[{{loop.index0}}];
+        {%- endif %}
+        {%- endfor %}
+
+        double *input_data = joint_data.joint_data.data()->data();
+        internal::forward_kinematics_internal(input_data, data_size * {{rotations | length}});
+
+        Eigen::Vector3d target_x_axis_ = target_rot_.block<3, 1>(0, 0);
+        Eigen::Vector3d target_y_axis_ = target_rot_.block<3, 1>(0, 1);
+        Eigen::Vector3d target_z_axis_ = target_rot_.block<3, 1>(0, 2);
+        Eigen::Vector3d target_x_ = target_pose_ + axis_scale * target_x_axis_;
+        Eigen::Vector3d target_y_ = target_pose_ + axis_scale * target_y_axis_;
+        Eigen::Vector3d target_z_ = target_pose_ + axis_scale * target_z_axis_;
+
+
+        Eigen::Vector<double, 3> ee_pose;
+        ee_pose << input_data[({{ rotations | length }} - 1) *data_size + 2], input_data[({{ rotations | length }} - 1)
+        *data_size + 3], input_data[({{ rotations | length }} - 1) *data_size + 4];
+
+        // x point
+        Eigen::Vector<double, 3> x_axis;
+        x_axis << input_data[({{ rotations | length }} - 1) *data_size + 5], input_data[({{ rotations | length }} - 1)
+        *data_size + 8], input_data[({{ rotations | length }} - 1) *data_size + 11];
+        Eigen::Vector<double, 3> current_x = ee_pose + x_axis;
+
+        // y point
+        Eigen::Vector<double, 3> y_axis;
+        y_axis << input_data[({{ rotations | length }} - 1) *data_size + 6], input_data[({{ rotations | length }} - 1)
+        *data_size + 9], input_data[({{ rotations | length }} - 1) *data_size + 12];
+        Eigen::Vector<double, 3> current_y = ee_pose + y_axis;
+
+        // z point
+        Eigen::Vector<double, 3> z_axis;
+        z_axis << input_data[({{ rotations | length }} - 1) *data_size + 7], input_data[({{ rotations | length }} - 1)
+        *data_size + 10], input_data[({{ rotations | length }} - 1) *data_size + 13];
+        Eigen::Vector<double, 3> current_z = ee_pose + z_axis;
+
+        double fx = 0.0;
+        Eigen::Vector3d delta_x = target_x_.array() - current_x.array();
+        Eigen::Vector3d delta_y = target_y_.array() - current_y.array();
+        Eigen::Vector3d delta_z = target_z_.array() - current_z.array();
+        fx += (delta_x.array() * delta_x.array()).sum();
+        fx += (delta_y.array() * delta_y.array()).sum();
+        fx += (delta_z.array() * delta_z.array()).sum();
+
+        // J =  (delta_x)^2
+        //    + (delta_y)^2
+        //    + (delta_z)^2
+
+        // dJ/dq = dJ1/dq + dJ2/dq + dJ3/dq
+
+        // dJ1/dq = dJ/ddelta_x * ddelta_x/dq
+        // dJ2/dq = dJ/ddelta_y * ddelta_y/dq
+        // dJ3/dq = dJ/ddelta_z * ddelta_z/dq
+
+        // dJ/ddelta_x : 1x3 2*(x_target - x_current)
+        // dJ/ddelta_y : 1x3 2*(y_target - y_current)
+        // dJ/ddelta_z : 1x3 2*(z_target - z_current)
+
+        // ddelta_x/dq: 3 x dofs J_{:3,:} + dofs J_{3:,:} x x_axis
+        // ddelta_y/dq: 3 x dofs J_{:3,:} + dofs J_{3:,:} x y_axis
+        // ddelta_z/dq: 3 x dofs J_{:3,:} + dofs J_{3:,:} x z_axis
+
+
+        // gradient
+        grad *= 0;
+        Eigen::Vector3d dJ_ddelta_x = 2 * delta_x;
+        Eigen::Vector3d dJ_ddelta_y = 2 * delta_y;
+        Eigen::Vector3d dJ_ddelta_z = 2 * delta_z;
+
+        Eigen::Vector<double, 3> joint_pose;
+        Eigen::Vector<double, 3> delta;
+        Eigen::Vector<double, 3> joint_axis;
+        Eigen::Vector<double, 3> jac_linear;
+        Eigen::Vector<double, 3> jac_angular;
+        Eigen::Vector3d ddelta_x_dq_ind;
+        Eigen::Vector3d ddelta_y_dq_ind;
+        Eigen::Vector3d ddelta_z_dq_ind;
+
+        {% for type in types %}
+        {
+            constexpr std::size_t ind = {{loop.index0}};
+            {% if type == 'revolute' %}
+            joint_pose[0] = input_data[ind * data_size + 2];
+            joint_pose[1] = input_data[ind * data_size + 3];
+            joint_pose[2] = input_data[ind * data_size + 4];
+            delta = ee_pose - joint_pose;
+            joint_axis[0] = input_data[ind * data_size + 7];
+            joint_axis[1] = input_data[ind * data_size + 10];
+            joint_axis[2] = input_data[ind * data_size + 13];
+            jac_linear = joint_axis.cross(delta);
+            jac_angular = joint_axis;
+
+            // x point
+            ddelta_x_dq_ind = jac_linear + jac_angular.cross(axis_scale * x_axis);
+            grad[ind] -= dJ_ddelta_x.dot(ddelta_x_dq_ind);
+
+            // y point
+            ddelta_y_dq_ind = jac_linear + jac_angular.cross(axis_scale * y_axis);
+            grad[ind] -= dJ_ddelta_y.dot(ddelta_y_dq_ind);
+
+            // z point
+            ddelta_z_dq_ind = jac_linear + jac_angular.cross(axis_scale * z_axis);
+            grad[ind] -= dJ_ddelta_z.dot(ddelta_z_dq_ind);
+
+            {% elif type == 'prismatic' %}
+            joint_axis[0] = input_data[ind * data_size + 7];
+            joint_axis[1] = input_data[ind * data_size + 10];
+            joint_axis[2] = input_data[ind * data_size + 13];
+            // jac_linear is the joint axis
+            // x point
+            grad[ind] -= dJ_ddelta_x.dot(joint_axis);
+
+            // y point
+            grad[ind] -= dJ_ddelta_y.dot(joint_axis);
+
+            // z point
+            grad[ind] -= dJ_ddelta_z.dot(joint_axis);
+            {% endif %}
+        }
+        {% endfor %}
+
+        return fx;
+    }
+
+
+}

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "LBFGS.h"
 #include <Eigen/Core>
 
 namespace fast_fk {
@@ -64,7 +65,7 @@ namespace fast_fk {
     }
 
 
-    void get_frame(size_t index, Eigen::Matrix<float, 4, 4> &transform) const {
+    void get_frame(size_t index, Eigen::Matrix<double, 4, 4> &transform) const {
       transform(0, 3) = joint_data[index][2];
       transform(1, 3) = joint_data[index][3];
       transform(2, 3) = joint_data[index][4];

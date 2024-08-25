@@ -11,3 +11,5 @@ target_compile_options(fast_forward_kinematics_library PRIVATE -Ofast -march=nat
 
 add_executable(forward_kinematics_test forward_kinematics_test.cpp)
 target_link_libraries(forward_kinematics_test PRIVATE fast_forward_kinematics_library)
+add_executable(inverse_kinematics_test inverse_kinematics_test.cpp)
+target_link_libraries(inverse_kinematics_test PRIVATE fast_forward_kinematics_library)
