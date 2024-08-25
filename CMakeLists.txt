@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.22)
 project(fast_forward_kinematics)
 
+# Set C++ standard to C++20
+set(CMAKE_CXX_STANDARD 20)
+
 # Generate the module for the python
 include(cmake/fast_forward_kinematics-extras.cmake)
 

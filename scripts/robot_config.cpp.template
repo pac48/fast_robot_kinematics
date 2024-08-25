@@ -1,5 +1,4 @@
-#include "forward_kinematics_eigen.hpp"
-#include "inverse_kinematics_eigen.hpp"
+#include "fast_kinematics.hpp"
 
 namespace fast_fk::internal {
     // sin(t) cos(t)  px py pz R11, R12, R13...
@@ -220,15 +219,10 @@ namespace fast_fk::internal {
 }
 
 
-namespace fast_fk {
+namespace fast_fk::internal {
     constexpr float axis_scale = 1;
 
-    InverseKinematics::InverseKinematics(Eigen::Matrix<float, 3, 3> target_rot,
-                                         const Eigen::Vector<float, 3> &target_pose)
-            : target_rot_{std::move(target_rot)}, target_pose_{target_pose} {}
-
     float InverseKinematics::operator()(const Eigen::VectorX<float> &q, Eigen::VectorX<float> &grad) {
-        auto & data_size = internal::data_size;
         // construct input_data from q
         float tmp1;
         float tmp2;
@@ -237,14 +231,14 @@ namespace fast_fk {
         {% if type == 'revolute' -%}
         tmp1 = q[{{loop.index0}}];
         tmp2 = q[{{loop.index0}}];
-        joint_data.joint_data[{{loop.index0}}][0] = std::sin(tmp1);
-        joint_data.joint_data[{{loop.index0}}][1] = std::cos(tmp2);
+        joint_data[{{loop.index0}}][0] = std::sin(tmp1);
+        joint_data[{{loop.index0}}][1] = std::cos(tmp2);
         {%- elif type == 'prismatic' -%}
-        joint_data.joint_data[{{loop.index0}}][0] = q[{{loop.index0}}];
+        joint_data[{{loop.index0}}][0] = q[{{loop.index0}}];
         {%- endif %}
         {%- endfor %}
 
-        float *input_data = joint_data.joint_data.data()->data();
+        float *input_data = joint_data.data()->data();
         internal::forward_kinematics_internal(input_data, data_size * {{rotations | length}});
 
         Eigen::Vector3<float> target_x_axis_ = target_rot_.block<3, 1>(0, 0);

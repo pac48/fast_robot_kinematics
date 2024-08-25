@@ -1,7 +1,7 @@
 #include "chrono"
 #include "iostream"
 
-#include "forward_kinematics_eigen.hpp"
+#include "fast_kinematics.hpp"
 
 int main(int arc, char **argv) {
     constexpr int iterations = 128 * 128;
@@ -10,14 +10,16 @@ int main(int arc, char **argv) {
         rand_val = Eigen::Vector<float, FAST_FK_NUMBER_OF_JOINTS>::Random();
     }
 
-    fast_fk::JointData joints;
+    fk_interface::JointDataInterface<fast_fk::JointData> fk_interface;
+
+
     auto start = std::chrono::high_resolution_clock::now();
 
     for (int i = 0; i < iterations; i++) {
         auto &rand_val = rand_values[i];
         for (int k = 0; k < 128 * 128; k++) {
-            joints.set_joints(rand_val);
-            joints.forward_kinematics();
+            fk_interface.set_joints(rand_val);
+            fk_interface.forward_kinematics();
         }
     }
 
