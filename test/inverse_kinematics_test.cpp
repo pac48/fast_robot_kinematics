@@ -25,6 +25,7 @@ int main(int arc, char **argv) {
     LBFGSpp::LBFGSParam<float> param;
     param.epsilon = 1E-3;
     param.epsilon_rel = 1E-3;
+    param.max_iterations = 30;
     LBFGSpp::LBFGSSolver<float> solver(param);
     fast_fk::InverseKinematics fun(target_rot, target_pose);
 

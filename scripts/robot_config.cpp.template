@@ -225,10 +225,7 @@ namespace fast_fk {
 
     InverseKinematics::InverseKinematics(Eigen::Matrix<float, 3, 3> target_rot,
                                          const Eigen::Vector<float, 3> &target_pose)
-            : target_rot_{std::move(target_rot)}, target_pose_{target_pose} {
-
-
-    }
+            : target_rot_{std::move(target_rot)}, target_pose_{target_pose} {}
 
     float InverseKinematics::operator()(const Eigen::VectorX<float> &q, Eigen::VectorX<float> &grad) {
         auto & data_size = internal::data_size;

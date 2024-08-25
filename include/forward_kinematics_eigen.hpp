@@ -1,6 +1,5 @@
 #pragma once
 
-#include "LBFGS.h"
 #include <Eigen/Core>
 
 namespace fast_fk {
@@ -19,14 +18,8 @@ namespace fast_fk {
       joint_data[ind][1] = std::cos(value);
     }
 
-    void set_joints(const float *values) {
-      for (auto ind = 0; ind < FAST_FK_NUMBER_OF_JOINTS; ++ind) {
-        joint_data[ind][0] = std::sin(values[ind]);
-        joint_data[ind][1] = std::cos(values[ind]);
-      }
-    }
-
     void set_joints(const Eigen::Vector<float, FAST_FK_NUMBER_OF_JOINTS> &values) {
+      #pragma unroll
       for (auto ind = 0; ind < FAST_FK_NUMBER_OF_JOINTS; ++ind) {
         joint_data[ind][0] = std::sin(values[ind]);
         joint_data[ind][1] = std::cos(values[ind]);
@@ -39,6 +32,7 @@ namespace fast_fk {
     }
 
     void set_joints(const float *sin_values, const float *cos_values) {
+      #pragma unroll
       for (auto ind = 0; ind < FAST_FK_NUMBER_OF_JOINTS; ++ind) {
         joint_data[ind][0] = sin_values[ind];
         joint_data[ind][1] = cos_values[ind];
@@ -47,6 +41,7 @@ namespace fast_fk {
 
     void set_joints(const Eigen::Vector<float, FAST_FK_NUMBER_OF_JOINTS> &sin_values,
                     const Eigen::Vector<float, FAST_FK_NUMBER_OF_JOINTS> &cos_values) {
+      #pragma unroll
       for (auto ind = 0; ind < FAST_FK_NUMBER_OF_JOINTS; ++ind) {
         joint_data[ind][0] = sin_values[ind];
         joint_data[ind][1] = cos_values[ind];
@@ -55,12 +50,13 @@ namespace fast_fk {
 
 
     [[nodiscard]] float get_joint(size_t ind) const {
-      return asin(joint_data[ind][0]);
+      return atan2f(joint_data[ind][0], joint_data[ind][1]);
     }
 
     void get_joints(float *values) const {
+      #pragma unroll
       for (auto ind = 0; ind < FAST_FK_NUMBER_OF_JOINTS; ++ind) {
-        values[ind] = asin(joint_data[ind][0]);
+        values[ind] = atan2f(joint_data[ind][0], joint_data[ind][1]);
       }
     }
 
