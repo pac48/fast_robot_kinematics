@@ -3,11 +3,13 @@
 
 #ifdef USE_FAST_KINEMATICS
 #include "fast_kinematics.hpp"
+using KI = fast_fk::JointData;
 #else
 #include "kdl_kinematics.hpp"
+using KI = kdl_impl::JointData;
 #endif
 
-using KI = fast_fk::JointData;
+
 
 int main(int arc, char **argv) {
     unsigned seed = time(0);

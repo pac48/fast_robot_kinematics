@@ -11,6 +11,7 @@ set(URDF_FILE ${CMAKE_SOURCE_DIR}/test/urdf/robot.urdf)
 # generate FK/IK implementation
 set(USE_FAST_KINEMATICS 0)
 
+
 if (USE_FAST_KINEMATICS)
     target_compile_definitions(forward_kinematics_test PUBLIC USE_FAST_KINEMATICS)
     target_compile_definitions(inverse_kinematics_test PUBLIC USE_FAST_KINEMATICS)
@@ -25,11 +26,11 @@ if (USE_FAST_KINEMATICS)
     target_link_libraries(inverse_kinematics_test PRIVATE fast_forward_kinematics_library)
 
 else ()
-    set(LIB_KDL_PARSER ${CMAKE_BINARY_DIR}/kdl_parser/src/kdl_parser-build/libkdl_parser.so)
+    set(LIB_KDL_PARSER ${CMAKE_CURRENT_BINARY_DIR}/kdl_parser/src/kdl-parser-build/libkdl_parser.so)
     include(ExternalProject)
     ExternalProject_Add(
-            kdl_parser
-            PREFIX ${CMAKE_BINARY_DIR}/kdl_parser
+            kdl-parser
+            PREFIX ${CMAKE_CURRENT_BINARY_DIR}/kdl_parser
             SOURCE_SUBDIR kdl_parser
             GIT_REPOSITORY https://github.com/ros/kdl_parser.git
             GIT_TAG ros2
@@ -38,16 +39,14 @@ else ()
     )
     # use custom target to ensure zed-open-capture is downloaded and installed before building main target
     add_library(kdl_parser_lib SHARED IMPORTED)
-    add_custom_target(kdl_parser_lib-target DEPENDS zed-open-capture)
+    add_custom_target(kdl_parser_lib-target DEPENDS kdl-parser)
     add_dependencies(kdl_parser_lib kdl_parser_lib-target)
     set_target_properties(kdl_parser_lib PROPERTIES IMPORTED_LOCATION ${LIB_KDL_PARSER})
-    target_include_directories(kdl_parser_lib INTERFACE ${CMAKE_BINARY_DIR}/include/kdl_parser)
 
-
-    set(LIB_KDL ${CMAKE_BINARY_DIR}/kdl/src/kdl-build/src/liborocos-kdl.so)
+    set(LIB_KDL ${CMAKE_CURRENT_BINARY_DIR}/kdl/src/kdl-content-build/src/liborocos-kdl.so)
     ExternalProject_Add(
-            kdl
-            PREFIX ${CMAKE_BINARY_DIR}/kdl
+            kdl-content
+            PREFIX ${CMAKE_CURRENT_BINARY_DIR}/kdl
             SOURCE_SUBDIR orocos_kdl
             GIT_REPOSITORY https://github.com/orocos/orocos_kinematics_dynamics.git
             GIT_TAG master
@@ -56,18 +55,22 @@ else ()
     )
     # use custom target to ensure zed-open-capture is downloaded and installed before building main target
     add_library(kdl_lib SHARED IMPORTED)
-    add_custom_target(kdl_lib-target DEPENDS zed-open-capture)
+    add_custom_target(kdl_lib-target DEPENDS kdl-content)
     add_dependencies(kdl_lib kdl_lib-target)
     set_target_properties(kdl_lib PROPERTIES IMPORTED_LOCATION ${LIB_KDL})
-    target_include_directories(kdl_lib INTERFACE ${CMAKE_BINARY_DIR}/include/kdl)
 
+    find_package(Eigen3 3.3 NO_MODULE)
     add_library(kdl_implementation kdl/kdl_implementation.cpp)
     target_include_directories(kdl_implementation PUBLIC ../include)
     target_compile_definitions(kdl_implementation PUBLIC NUMBER_OF_JOINTS=12)
     target_compile_definitions(kdl_implementation PUBLIC URDF_FILE=${URDF_FILE})
+    target_link_libraries(kdl_implementation PUBLIC kdl_lib kdl_parser_lib Eigen3::Eigen)
 
-    target_link_libraries(forward_kinematics_test PRIVATE kdl_implementation kdl_lib kdl_parser_lib)
-#    target_link_libraries(inverse_kinematics_test PRIVATE kdl_implementation)
+    target_include_directories(kdl_implementation PUBLIC ${CMAKE_BINARY_DIR}/include/kdl)
+    target_include_directories(kdl_implementation PUBLIC ${CMAKE_BINARY_DIR}/include/kdl_parser)
+
+    target_link_libraries(forward_kinematics_test PUBLIC kdl_implementation)
+    #    target_link_libraries(inverse_kinematics_test PRIVATE kdl_implementation)
 
 
 endif ()

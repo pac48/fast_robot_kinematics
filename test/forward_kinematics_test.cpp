@@ -2,18 +2,20 @@
 #include "iostream"
 #ifdef USE_FAST_KINEMATICS
 #include "fast_kinematics.hpp"
+using KI = fast_fk::JointData;
 #else
 #include "kdl_kinematics.hpp"
+using KI = kdl_impl::JointData;
 #endif
 
 int main(int arc, char **argv) {
     constexpr int iterations = 128 * 128;
-    std::array<Eigen::Vector<float, FAST_FK_NUMBER_OF_JOINTS>, iterations> rand_values;
+    std::array<Eigen::Vector<float, KI::get_num_joints()>, iterations> rand_values;
     for (auto &rand_val: rand_values) {
-        rand_val = Eigen::Vector<float, FAST_FK_NUMBER_OF_JOINTS>::Random();
+        rand_val = Eigen::Vector<float, KI::get_num_joints()>::Random();
     }
 
-    fk_interface::JointDataInterface<kdl_impl::JointData> fk_interface;
+    fk_interface::JointDataInterface<KI> fk_interface;
 
 
     auto start = std::chrono::high_resolution_clock::now();
