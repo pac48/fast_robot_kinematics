@@ -1,10 +1,12 @@
 #pragma once
 
 #include "memory"
+#include "fstream"
 
 #include "eigen3/Eigen/Core"
 #include "eigen3/Eigen/LU"
 #include "chainfksolverpos_recursive.hpp"
+#include "chainiksolverpos_lma.hpp"
 #include "chainfksolvervel_recursive.hpp"
 #include "chainjnttojacsolver.hpp"
 #include "treejnttojacsolver.hpp"
@@ -25,7 +27,40 @@ namespace kdl_impl {
         }
 
         JointData() {
-           std::string urdf_file = STRINGIZE_VALUE_OF(URDF_FILE);
+            std::string urdf_file = STRINGIZE_VALUE_OF(URDF_FILE);
+            std::string robot_description;
+            {
+                std::fstream f;
+                f.open(urdf_file);
+                std::stringstream ss;
+                ss << f.rdbuf();
+                robot_description = ss.str();
+            }
+            // create kinematic chain
+            kdl_parser::treeFromString(robot_description, robot_tree);
+            std::string root_name = STRINGIZE_VALUE_OF(ROOT);
+            std::string tip_name = STRINGIZE_VALUE_OF(TIP);
+
+            if (!robot_tree.getChain(root_name, tip_name, chain)) {
+                throw std::runtime_error("failed to load robot from URDF");
+            }
+            auto num_joints_ = chain.getNrOfJoints();
+            assert(num_joints_ == NUMBER_OF_JOINTS);
+            q = KDL::JntArray(num_joints_);
+
+            fk_pos_solver = std::make_shared<KDL::ChainFkSolverPos_recursive>(chain);
+            ik_solver_lma = std::make_shared<KDL::ChainIkSolverPos_LMA>(chain);
+
+            for (auto i = 0; i < chain.getNrOfSegments(); ++i) {
+                if (chain.getSegment(i).getName() == tip_name) {
+                    ee_ind = i + 1;
+                    break;
+                }
+            }
+            if (ee_ind == -1) {
+                throw std::runtime_error("The tip `" + tip_name + " is missing from the chain.");
+            }
+
 
         }
 
@@ -81,19 +116,44 @@ namespace kdl_impl {
 
         void get_frame(size_t index, Eigen::Matrix<float, 4, 4> &transform) const {
 //            transform(0, 3) = joint_data[index][2];
-      
-        }
-
-        void forward_kinematics() {
 
         }
+
+        // taken from https://github.com/ros/geometry/blob/noetic-devel/eigen_conversions/src/eigen_kdl.cpp
+        void transformKDLToEigen(const KDL::Frame &k, Eigen::Matrix<float, 4, 4> &e) {
+            // translation
+            for (unsigned int i = 0; i < 3; ++i)
+                e(i, 3) = k.p[i];
+
+            // rotation matrix
+            for (unsigned int i = 0; i < 9; ++i)
+                e(i / 3, i % 3) = k.M.data[i];
+
+            // "identity" row
+            e(3, 0) = 0.0;
+            e(3, 1) = 0.0;
+            e(3, 2) = 0.0;
+            e(3, 3) = 1.0;
+        }
+
+        void forward_kinematics();
 
         fk_interface::IKSolverStats
         inverse_kinematics(Eigen::Matrix<float, 4, 4> &transform, Eigen::VectorX<float> &q_guess) {
             return {};
         }
 
-    };
 
+        Eigen::Matrix<float, 4, 4> transform;
+        KDL::JntArray q;
+        int ee_ind = -1;
+
+        KDL::Tree robot_tree;
+        KDL::Chain chain;
+        KDL::Frame frame;
+        std::shared_ptr<KDL::ChainFkSolverPos_recursive> fk_pos_solver;
+        std::shared_ptr<KDL::ChainIkSolverPos_LMA> ik_solver_lma;
+
+    };
 
 }
