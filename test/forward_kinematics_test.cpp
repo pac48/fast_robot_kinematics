@@ -1,7 +1,10 @@
 #include "chrono"
 #include "iostream"
-
+#ifdef USE_FAST_KINEMATICS
 #include "fast_kinematics.hpp"
+#else
+#include "kdl_kinematics.hpp"
+#endif
 
 int main(int arc, char **argv) {
     constexpr int iterations = 128 * 128;
@@ -10,7 +13,7 @@ int main(int arc, char **argv) {
         rand_val = Eigen::Vector<float, FAST_FK_NUMBER_OF_JOINTS>::Random();
     }
 
-    fk_interface::JointDataInterface<fast_fk::JointData> fk_interface;
+    fk_interface::JointDataInterface<kdl_impl::JointData> fk_interface;
 
 
     auto start = std::chrono::high_resolution_clock::now();

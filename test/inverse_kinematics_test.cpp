@@ -1,8 +1,11 @@
 #include "chrono"
 #include "iostream"
 
-#include "kinematics_interface.hpp"
+#ifdef USE_FAST_KINEMATICS
 #include "fast_kinematics.hpp"
+#else
+#include "kdl_kinematics.hpp"
+#endif
 
 using KI = fast_fk::JointData;
 
