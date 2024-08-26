@@ -1,7 +1,10 @@
 #include "chrono"
 #include "iostream"
+
 #ifdef USE_FAST_KINEMATICS
+
 #include "fast_kinematics.hpp"
+
 using KI = fast_fk::JointData;
 #else
 #include "kdl_kinematics.hpp"
@@ -10,21 +13,20 @@ using KI = kdl_impl::JointData;
 
 int main(int arc, char **argv) {
     constexpr int iterations = 128 * 128;
-    constexpr int multiplier = 128*64;
+    constexpr int multiplier = 128 * MULTIPLIER;
     std::array<Eigen::Vector<float, KI::get_num_joints()>, iterations> rand_values;
     for (auto &rand_val: rand_values) {
         rand_val = Eigen::Vector<float, KI::get_num_joints()>::Random();
     }
 
     fk_interface::JointDataInterface<KI> fk_interface;
-
+    Eigen::Matrix<float, 4, 4> tf;
 
     auto start = std::chrono::high_resolution_clock::now();
 
-    for (int i = 0; i < iterations; i++) {
-        auto &rand_val = rand_values[i];
-        for (int k = 0; k < multiplier; k++) {
-            fk_interface.set_joints(rand_val);
+    for (int k = 0; k < multiplier; k++) {
+        for (int i = 0; i < iterations; i++) {
+            fk_interface.set_joints(rand_values[i]);
             fk_interface.forward_kinematics();
         }
     }

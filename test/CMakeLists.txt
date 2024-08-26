@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 20)
 
 
 add_executable(forward_kinematics_test forward_kinematics_test.cpp)
-#add_executable(inverse_kinematics_test inverse_kinematics_test.cpp)
+add_executable(inverse_kinematics_test inverse_kinematics_test.cpp)
 
 set(URDF_FILE ${CMAKE_SOURCE_DIR}/test/urdf/robot.urdf)
 set(ROOT base_link)
@@ -13,21 +13,19 @@ set(TIP grasp_link)
 
 
 # generate FK/IK implementation
-set(USE_FAST_KINEMATICS 1)
-
+set(USE_FAST_KINEMATICS 0)
 
 if (USE_FAST_KINEMATICS)
-
     target_compile_definitions(forward_kinematics_test PUBLIC USE_FAST_KINEMATICS)
-    #    target_compile_definitions(inverse_kinematics_test PUBLIC USE_FAST_KINEMATICS)
+    target_compile_definitions(inverse_kinematics_test PUBLIC USE_FAST_KINEMATICS)
     generate_fast_forward_kinematics_library(${URDF_FILE} ${ROOT} ${TIP})
     if (${CMAKE_BUILD_TYPE} STREQUAL "Release")
         set_target_properties(fast_forward_kinematics_library PROPERTIES CMAKE_BUILD_TYPE Release)
-        target_compile_options(fast_forward_kinematics_library PUBLIC -Ofast -march=native)
+        target_compile_options(fast_forward_kinematics_library PUBLIC -Ofast -march=native -msse)
     endif ()
     target_link_libraries(forward_kinematics_test PUBLIC fast_forward_kinematics_library)
-    #    target_link_libraries(inverse_kinematics_test PRIVATE fast_forward_kinematics_library)
-
+    target_compile_definitions(forward_kinematics_test PUBLIC MULTIPLIER=64)
+    target_link_libraries(inverse_kinematics_test PRIVATE fast_forward_kinematics_library)
 else ()
     set(CXX_FLAGS "-Ofast")
 
@@ -43,7 +41,7 @@ else ()
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR} -DCMAKE_CXX_FLAGS=${CXX_FLAGS}
             BUILD_BYPRODUCTS ${LIB_KDL_PARSER}
     )
-    # use custom target to ensure kdl_parser_lib is downloaded and installed before building main target
+    # use custom target to ensure kdl-parser is downloaded and installed before building main target
     add_library(kdl_parser_lib SHARED IMPORTED)
     add_custom_target(kdl_parser_lib-target DEPENDS kdl-parser)
     add_dependencies(kdl_parser_lib kdl_parser_lib-target)
@@ -59,7 +57,7 @@ else ()
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR} -DCMAKE_CXX_FLAGS=${CXX_FLAGS}
             BUILD_BYPRODUCTS ${LIB_KDL}
     )
-    # use custom target to ensure zed-open-capture is downloaded and installed before building main target
+    # use custom target to ensure kdl-content is downloaded and installed before building main target
     add_library(kdl_lib SHARED IMPORTED)
     add_custom_target(kdl_lib-target DEPENDS kdl-content)
     add_dependencies(kdl_lib kdl_lib-target)
@@ -82,6 +80,9 @@ else ()
     target_include_directories(kdl_implementation PUBLIC ${CMAKE_BINARY_DIR}/include/kdl_parser)
 
     target_link_libraries(forward_kinematics_test PUBLIC kdl_implementation)
+    target_link_libraries(inverse_kinematics_test PUBLIC kdl_implementation)
+
+    target_compile_definitions(forward_kinematics_test PUBLIC MULTIPLIER=2)
 
 
 endif ()

@@ -47,6 +47,7 @@ namespace kdl_impl {
             auto num_joints_ = chain.getNrOfJoints();
             assert(num_joints_ == NUMBER_OF_JOINTS);
             q = KDL::JntArray(num_joints_);
+            q_out = q;
 
             fk_pos_solver = std::make_shared<KDL::ChainFkSolverPos_recursive>(chain);
             ik_solver_lma = std::make_shared<KDL::ChainIkSolverPos_LMA>(chain);
@@ -114,38 +115,17 @@ namespace kdl_impl {
         }
 
 
-        void get_frame(size_t index, Eigen::Matrix<float, 4, 4> &transform) const {
-//            transform(0, 3) = joint_data[index][2];
-
-        }
-
-        // taken from https://github.com/ros/geometry/blob/noetic-devel/eigen_conversions/src/eigen_kdl.cpp
-        void transformKDLToEigen(const KDL::Frame &k, Eigen::Matrix<float, 4, 4> &e) {
-            // translation
-            for (unsigned int i = 0; i < 3; ++i)
-                e(i, 3) = k.p[i];
-
-            // rotation matrix
-            for (unsigned int i = 0; i < 9; ++i)
-                e(i / 3, i % 3) = k.M.data[i];
-
-            // "identity" row
-            e(3, 0) = 0.0;
-            e(3, 1) = 0.0;
-            e(3, 2) = 0.0;
-            e(3, 3) = 1.0;
-        }
+        void get_frame(size_t index, Eigen::Matrix<float, 4, 4> &tf) const;
 
         void forward_kinematics();
 
         fk_interface::IKSolverStats
-        inverse_kinematics(Eigen::Matrix<float, 4, 4> &transform, Eigen::VectorX<float> &q_guess) {
-            return {};
-        }
+        inverse_kinematics(Eigen::Matrix<float, 4, 4> &transform, Eigen::VectorX<float> &q_guess);
 
 
         Eigen::Matrix<float, 4, 4> transform;
         KDL::JntArray q;
+        KDL::JntArray q_out;
         int ee_ind = -1;
 
         KDL::Tree robot_tree;
