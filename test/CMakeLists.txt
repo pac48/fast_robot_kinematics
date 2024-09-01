@@ -2,7 +2,9 @@ cmake_minimum_required(VERSION 3.22)
 project(fast_forward_kinematics)
 #enable_language(CUDA)
 set(CMAKE_CXX_STANDARD 20)
-
+if (NOT DEFINED CMAKE_BUILD_TYPE OR "${CMAKE_BUILD_TYPE}" STREQUAL "")
+    set(CMAKE_BUILD_TYPE Release)
+endif ()
 
 add_executable(forward_kinematics_test forward_kinematics_test.cpp)
 add_executable(inverse_kinematics_test inverse_kinematics_test.cpp)
@@ -13,7 +15,7 @@ set(TIP grasp_link)
 
 
 # generate FK/IK implementation
-set(USE_FAST_KINEMATICS 0)
+set(USE_FAST_KINEMATICS 1)
 
 if (USE_FAST_KINEMATICS)
     target_compile_definitions(forward_kinematics_test PUBLIC USE_FAST_KINEMATICS)
