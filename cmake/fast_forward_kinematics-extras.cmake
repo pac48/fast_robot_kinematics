@@ -30,12 +30,18 @@ function(generate_fast_forward_kinematics_library URDF_FILE ROOT_LINK TIP_LINK)
             ${CMAKE_CURRENT_BINARY_DIR}/forward_kinematics_lib.cpp ${ROOT_LINK} ${TIP_LINK}
             DEPENDS ${URDF_FILE} ${CMAKE_SOURCE_DIR}/scripts/robot_config.cpp.template
             COMMENT
-            "Running `${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/scripts/robot_gen.py ${URDF_FILE} ${CMAKE_SOURCE_DIR}/scripts/robot_config.cpp.template
-    ${CMAKE_CURRENT_BINARY_DIR}/forward_kinematics_test.cpp ${ROOT_LINK} ${TIP_LINK}`"
+            "Running `${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/scripts/robot_gen.py
+                      ${URDF_FILE}
+                      ${CMAKE_SOURCE_DIR}/scripts/robot_config.cpp.template
+                      ${CMAKE_CURRENT_BINARY_DIR}/forward_kinematics_test.cpp
+                      ${ROOT_LINK}
+                      ${TIP_LINK}`"
             VERBATIM
     )
+    add_custom_target(code_generation DEPENDS forward_kinematics_lib.cpp)
 
     add_library(fast_forward_kinematics_library SHARED forward_kinematics_lib.cpp)
+    add_dependencies(fast_forward_kinematics_library code_generation)
     target_include_directories(fast_forward_kinematics_library PUBLIC ${CMAKE_SOURCE_DIR}/include)
     target_compile_definitions(fast_forward_kinematics_library PUBLIC "${FAST_FK_NUMBER_OF_JOINTS}")
     find_package(Eigen3 3.3 NO_MODULE)
