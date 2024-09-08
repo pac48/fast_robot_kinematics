@@ -18,7 +18,7 @@ function(generate_fast_forward_kinematics_library_common URDF_FILE ROOT_LINK TIP
             OUTPUT forward_kinematics_lib.${EXT}
             COMMAND ${Python_EXECUTABLE} ${CMAKE_SOURCE_DIR}/scripts/robot_gen.py ${URDF_FILE} ${CMAKE_SOURCE_DIR}/scripts/robot_config.${EXT}.template
             ${CMAKE_CURRENT_BINARY_DIR}/forward_kinematics_lib.${EXT} ${ROOT_LINK} ${TIP_LINK}
-            DEPENDS ${URDF_FILE} ${CMAKE_SOURCE_DIR}/scripts/robot_config.cpp.template
+            DEPENDS ${URDF_FILE} ${CMAKE_SOURCE_DIR}/scripts/robot_config.${EXT}.template
             COMMENT
             "Running `${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/scripts/robot_gen.py
                       ${URDF_FILE}
