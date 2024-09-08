@@ -11,6 +11,7 @@ function(generate_fast_forward_kinematics_library URDF_FILE ROOT_LINK TIP_LINK)
             COMMAND ${Python_EXECUTABLE} ${CMAKE_SOURCE_DIR}/scripts/get_num_joints.py ${URDF_FILE} ${ROOT_LINK} ${TIP_LINK}
             OUTPUT_VARIABLE FAST_FK_NUMBER_OF_JOINTS
             OUTPUT_STRIP_TRAILING_WHITESPACE
+            COMMAND_ECHO STDOUT
     )
 
     include(ExternalProject)
@@ -18,7 +19,7 @@ function(generate_fast_forward_kinematics_library URDF_FILE ROOT_LINK TIP_LINK)
             LBFGSpp
             PREFIX ${CMAKE_BINARY_DIR}/LBFGSpp
             GIT_REPOSITORY https://github.com/yixuan/LBFGSpp.git
-            GIT_TAG master
+            GIT_TAG v0.3.0
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}
     )
     ExternalProject_Get_Property(LBFGSpp source_dir)

@@ -15,7 +15,7 @@ set(TIP grasp_link)
 
 
 # generate FK/IK implementation
-set(USE_FAST_KINEMATICS 1)
+set(USE_FAST_KINEMATICS 0)
 
 if (USE_FAST_KINEMATICS)
     target_compile_definitions(forward_kinematics_test PUBLIC USE_FAST_KINEMATICS)
@@ -39,7 +39,7 @@ else ()
             PREFIX ${CMAKE_CURRENT_BINARY_DIR}/kdl_parser
             SOURCE_SUBDIR kdl_parser
             GIT_REPOSITORY https://github.com/ros/kdl_parser.git
-            GIT_TAG ros2
+            GIT_TAG 2.12.0
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR} -DCMAKE_CXX_FLAGS=${CXX_FLAGS}
             BUILD_BYPRODUCTS ${LIB_KDL_PARSER}
     )
@@ -55,7 +55,7 @@ else ()
             PREFIX ${CMAKE_CURRENT_BINARY_DIR}/kdl
             SOURCE_SUBDIR orocos_kdl
             GIT_REPOSITORY https://github.com/orocos/orocos_kinematics_dynamics.git
-            GIT_TAG master
+            GIT_TAG master # v1.5.1
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR} -DCMAKE_CXX_FLAGS=${CXX_FLAGS}
             BUILD_BYPRODUCTS ${LIB_KDL}
     )
