@@ -28,7 +28,7 @@ if (USE_FAST_KINEMATICS)
     target_link_libraries(forward_kinematics_test PUBLIC fast_forward_kinematics_library)
     target_compile_definitions(forward_kinematics_test PUBLIC MULTIPLIER=64)
     target_link_libraries(inverse_kinematics_test PRIVATE fast_forward_kinematics_library)
-    target_compile_definitions(inverse_kinematics_test PUBLIC MULTIPLIER=64)
+    target_compile_definitions(inverse_kinematics_test PUBLIC MULTIPLIER=32)
 else ()
     set(CXX_FLAGS "-Ofast")
 

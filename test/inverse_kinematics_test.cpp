@@ -8,7 +8,7 @@ using IK = fast_fk::JointData;
 
 #include "kdl_kinematics.hpp"
 
-using KI = kdl_impl::JointData;
+using IK = kdl_impl::JointData;
 #endif
 
 

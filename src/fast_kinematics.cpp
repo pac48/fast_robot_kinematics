@@ -12,21 +12,12 @@ namespace fast_fk {
     namespace internal {
         // input_data: sin(t) cos(t)  px py pz R11, R12, R13...
         void forward_kinematics_internal(float *input_data, size_t size);
-
-        InverseKinematics::InverseKinematics(const Eigen::Matrix<float, 3, 3> &target_rot,
-                                             const Eigen::Vector<float, 3> &target_pose) : target_rot_{target_rot},
-                                                                                           target_pose_{target_pose} {}
-
     }
 
     JointData::JointData() : target_pose{Eigen::Vector<float, 3>::Zero()},
                              target_rot{Eigen::Matrix<float, 3, 3>::Zero()},
                              fun{std::make_unique<internal::InverseKinematics>(target_rot, target_pose)} {
-        param.epsilon = 1E-3;
-        param.epsilon_rel = 1E-3;
-        param.max_iterations = 30;
 
-        solver = std::make_unique<LBFGSpp::LBFGSSolver<float >>(param);
     }
 
 
@@ -108,19 +99,6 @@ namespace fast_fk {
 
     fk_interface::IKSolverStats
     JointData::inverse_kinematics(Eigen::Matrix<float, 4, 4> &transform, Eigen::VectorX<float> &q_guess) {
-        target_rot = transform.block<3, 3>(0, 0);
-        target_pose(0) = transform(0, 3);
-        target_pose(1) = transform(1, 3);
-        target_pose(2) = transform(2, 3);
-        float fx = 1E10;
-        int niter;
-
-        try {
-            niter = solver->minimize(*fun, q_guess, fx);
-        } catch (const std::runtime_error &e) {
-            return {fx, niter, solver->final_grad_norm(), false, e.what()};
-        }
-
-        return {fx, niter, solver->final_grad_norm(), true, ""};
+        return fun->inverse_kinematics(transform, q_guess);
     }
 }

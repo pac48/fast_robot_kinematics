@@ -3,12 +3,11 @@
 #include "memory"
 
 #include <Eigen/Core>
-#include "LBFGS.h"
 #include <Eigen/Dense>
 
 #include "kinematics_interface.hpp"
-#include "fast_inverse_kinematics.hpp"
 #include "fast_kinematics_joint_data_length.hpp"
+#include "fast_inverse_kinematics.hpp"
 
 namespace fast_fk {
     struct JointData {
@@ -45,10 +44,8 @@ namespace fast_fk {
 
         Eigen::Matrix<float, 3, 3> target_rot;
         Eigen::Vector<float, 3> target_pose;
-        std::unique_ptr<LBFGSpp::LBFGSSolver<float>> solver;
-        LBFGSpp::LBFGSParam<float> param;
-        std::unique_ptr<fast_fk::internal::InverseKinematics> fun;
         std::array<std::array<float, internal::joint_data_length>, FAST_FK_NUMBER_OF_JOINTS> joint_data = {0};
+        std::unique_ptr<internal::InverseKinematics> fun;
     };
 
 }
