@@ -6,6 +6,7 @@
 #include "LBFGS.h"
 
 #include "fast_kinematics.hpp"
+#include "fast_inverse_kinematics.hpp"
 
 namespace fast_fk {
     namespace internal {
@@ -20,12 +21,12 @@ namespace fast_fk {
 
     JointData::JointData() : target_pose{Eigen::Vector<float, 3>::Zero()},
                              target_rot{Eigen::Matrix<float, 3, 3>::Zero()},
-                             fun(target_rot, target_pose) {
+                             fun{std::make_unique<internal::InverseKinematics>(target_rot, target_pose)} {
         param.epsilon = 1E-3;
         param.epsilon_rel = 1E-3;
         param.max_iterations = 30;
 
-        solver = std::make_unique < LBFGSpp::LBFGSSolver < float >> (param);
+        solver = std::make_unique<LBFGSpp::LBFGSSolver<float >>(param);
     }
 
 
@@ -115,7 +116,7 @@ namespace fast_fk {
         int niter;
 
         try {
-            niter = solver->minimize(fun, q_guess, fx);
+            niter = solver->minimize(*fun, q_guess, fx);
         } catch (const std::runtime_error &e) {
             return {fx, niter, solver->final_grad_norm(), false, e.what()};
         }
