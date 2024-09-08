@@ -3,15 +3,16 @@
 #include "memory"
 
 #include <Eigen/Core>
-#include "LBFGS.h"
 #include <Eigen/Dense>
 
 #include "fast_kinematics_joint_data_length.hpp"
 #include "kinematics_interface.hpp"
 
+#ifdef FAST_FK_USE_IK
+#include "LBFGS.h"
+
 namespace fast_fk::internal {
 
-#ifdef FAST_FK_USE_IK
     class InverseKinematics {
     public:
         Eigen::Matrix<float, 3, 3> target_rot_;
@@ -28,7 +29,9 @@ namespace fast_fk::internal {
         fk_interface::IKSolverStats inverse_kinematics(Eigen::Matrix<float, 4, 4> &transform, Eigen::VectorX<float> &q_guess);
 
     };
+    }
 #else
+namespace fast_fk::internal {
     class InverseKinematics {
     public:
         InverseKinematics(const Eigen::Matrix<float, 3, 3> &target_rot,
@@ -36,7 +39,8 @@ namespace fast_fk::internal {
 
         float operator()(const Eigen::VectorX<float> &q, Eigen::VectorX<float> &grad);
 
-        fk_interface::IKSolverStats inverse_kinematics(Eigen::Matrix<float, 4, 4> &transform, Eigen::VectorX<float> &q_guess);
-};
-#endif
+        fk_interface::IKSolverStats
+        inverse_kinematics(Eigen::Matrix<float, 4, 4> &transform, Eigen::VectorX<float> &q_guess);
+    };
 }
+#endif

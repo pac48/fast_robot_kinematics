@@ -3,7 +3,6 @@
 #include "memory"
 
 #include <Eigen/Core>
-#include "LBFGS.h"
 
 #include "fast_kinematics.hpp"
 #include "fast_inverse_kinematics.hpp"
