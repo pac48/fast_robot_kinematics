@@ -15,7 +15,7 @@ set(TIP grasp_link)
 
 
 # generate FK/IK implementation
-set(USE_FAST_KINEMATICS 0)
+set(USE_FAST_KINEMATICS 1)
 
 if (USE_FAST_KINEMATICS)
     target_compile_definitions(forward_kinematics_test PUBLIC USE_FAST_KINEMATICS)
@@ -23,11 +23,12 @@ if (USE_FAST_KINEMATICS)
     generate_fast_forward_kinematics_library(${URDF_FILE} ${ROOT} ${TIP})
     if (${CMAKE_BUILD_TYPE} STREQUAL "Release")
         set_target_properties(fast_forward_kinematics_library PROPERTIES CMAKE_BUILD_TYPE Release)
-        target_compile_options(fast_forward_kinematics_library PUBLIC -Ofast -march=native -msse)
+        target_compile_options(fast_forward_kinematics_library PUBLIC -Ofast -march=native) # -msse
     endif ()
     target_link_libraries(forward_kinematics_test PUBLIC fast_forward_kinematics_library)
     target_compile_definitions(forward_kinematics_test PUBLIC MULTIPLIER=64)
     target_link_libraries(inverse_kinematics_test PRIVATE fast_forward_kinematics_library)
+    target_compile_definitions(inverse_kinematics_test PUBLIC MULTIPLIER=64)
 else ()
     set(CXX_FLAGS "-Ofast")
 
@@ -85,6 +86,7 @@ else ()
     target_link_libraries(inverse_kinematics_test PUBLIC kdl_implementation)
 
     target_compile_definitions(forward_kinematics_test PUBLIC MULTIPLIER=2)
+    target_compile_definitions(inverse_kinematics_test PUBLIC MULTIPLIER=1)
 
 
 endif ()

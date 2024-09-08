@@ -17,7 +17,7 @@ int main(int arc, char **argv) {
     srand(seed);
     rand();
 
-    constexpr int iterations = 128 * 128 * 5;
+    constexpr int iterations = 128 * 128 * 5* MULTIPLIER;
 
     // get target pose
     Eigen::VectorX<float> q_in = Eigen::VectorX<float>::Random(KI::get_num_joints());
