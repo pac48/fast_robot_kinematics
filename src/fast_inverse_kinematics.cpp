@@ -40,14 +40,13 @@ namespace fast_fk::internal {
 
 namespace fast_fk::internal {
     InverseKinematics::InverseKinematics(const Eigen::Matrix<float, 3, 3> &target_rot,
-                                         const Eigen::Vector<float, 3> &target_pose) : target_rot_{target_rot},
-                                                                                       target_pose_{target_pose} {}
+                                         const Eigen::Vector<float, 3> &target_pose){}
 
     fk_interface::IKSolverStats
-    InverseKinematics::inverse_kinematics(Eigen::VectorX<float> &q_guess) {
+    InverseKinematics::inverse_kinematics(Eigen::Matrix<float, 4, 4> &transform, Eigen::VectorX<float> &q_guess) {
         throw std::logic_error("Function not implemented.");
         return {};
     }
 
-}
+};
 #endif

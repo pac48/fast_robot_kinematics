@@ -1,5 +1,4 @@
-#include "fast_kinematics.hpp"
-#include "fast_inverse_kinematics.hpp"
+#include "array"
 
 namespace fast_fk::internal {
     // sin(t) cos(t)  px py pz R11, R12, R13...
@@ -219,6 +218,8 @@ namespace fast_fk::internal {
 
 }
 
+#ifdef FAST_FK_USE_IK
+#include "fast_inverse_kinematics.hpp"
 
 namespace fast_fk::internal {
     constexpr float axis_scale = 1;
@@ -360,5 +361,5 @@ namespace fast_fk::internal {
         return fx;
     }
 
-
 }
+#endif

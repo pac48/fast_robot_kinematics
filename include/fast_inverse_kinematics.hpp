@@ -10,6 +10,8 @@
 #include "kinematics_interface.hpp"
 
 namespace fast_fk::internal {
+
+#ifdef FAST_FK_USE_IK
     class InverseKinematics {
     public:
         Eigen::Matrix<float, 3, 3> target_rot_;
@@ -26,4 +28,15 @@ namespace fast_fk::internal {
         fk_interface::IKSolverStats inverse_kinematics(Eigen::Matrix<float, 4, 4> &transform, Eigen::VectorX<float> &q_guess);
 
     };
+#else
+    class InverseKinematics {
+    public:
+        InverseKinematics(const Eigen::Matrix<float, 3, 3> &target_rot,
+                          const Eigen::Vector<float, 3> &target_pose);
+
+        float operator()(const Eigen::VectorX<float> &q, Eigen::VectorX<float> &grad);
+
+        fk_interface::IKSolverStats inverse_kinematics(Eigen::Matrix<float, 4, 4> &transform, Eigen::VectorX<float> &q_guess);
+};
+#endif
 }
