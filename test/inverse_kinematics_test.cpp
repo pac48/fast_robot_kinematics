@@ -3,7 +3,7 @@
 
 #ifdef USE_FAST_KINEMATICS
 #include "fast_kinematics.hpp"
-using KI = fast_fk::JointData;
+using IK = fast_fk::JointData;
 #else
 
 #include "kdl_kinematics.hpp"
@@ -20,12 +20,12 @@ int main(int arc, char **argv) {
     constexpr int iterations = 128 * 128 * 5* MULTIPLIER;
 
     // get target pose
-    Eigen::VectorX<float> q_in = Eigen::VectorX<float>::Random(KI::get_num_joints());
-    fk_interface::JointDataInterface<KI> fk_interface;
+    Eigen::VectorX<float> q_in = Eigen::VectorX<float>::Random(IK::get_num_joints());
+    fk_interface::InverseKinematicsInterface<IK> fk_interface;
     fk_interface.set_joints(q_in);
     fk_interface.forward_kinematics();
     Eigen::Matrix<float, 4, 4> tf;
-    fk_interface.get_frame(KI::get_num_joints() - 1, tf);
+    fk_interface.get_frame(IK::get_num_joints() - 1, tf);
 
     auto start = std::chrono::high_resolution_clock::now();
 
@@ -33,9 +33,9 @@ int main(int arc, char **argv) {
     size_t failed = 0;
     size_t succeeded = 0;
 
-    Eigen::VectorX<float> q = 1 * Eigen::VectorX<float>::Random(KI::get_num_joints());
+    Eigen::VectorX<float> q = 1 * Eigen::VectorX<float>::Random(IK::get_num_joints());
     for (int ind = 0; ind < iterations; ++ind) {
-        q = Eigen::VectorX<float>::Random(KI::get_num_joints());
+        q = Eigen::VectorX<float>::Random(IK::get_num_joints());
         stats = fk_interface.inverse_kinematics(tf, q);
         failed += stats.success == 0;
         succeeded += stats.success == 1;

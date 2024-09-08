@@ -19,7 +19,7 @@ int main(int arc, char **argv) {
         rand_val = Eigen::Vector<float, KI::get_num_joints()>::Random();
     }
 
-    fk_interface::JointDataInterface<KI> fk_interface;
+    fk_interface::ForwardKinematicsInterface<KI> fk_interface;
     Eigen::Matrix<float, 4, 4> tf;
 
     auto start = std::chrono::high_resolution_clock::now();
