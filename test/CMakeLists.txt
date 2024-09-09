@@ -17,8 +17,8 @@ set(TIP grasp_link)
 
 
 # generate FK/IK implementation
-#set(FK_IMPL "FFK")
-set(FK_IMPL "FFK_CUDA")
+set(FK_IMPL "FFK")
+#set(FK_IMPL "FFK_CUDA")
 #set(FK_IMPL "KDL")
 
 if (${FK_IMPL} STREQUAL "FFK")

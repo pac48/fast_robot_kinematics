@@ -17,7 +17,9 @@ def run():
     joint_names = []
     while tip_link_name != root_link_name:
         tip_joint_name, tip_link_name = robot.parent_map[tip_link_name]
-        joint_names.append(tip_joint_name)
+        joint = robot.joint_map[tip_joint_name]
+        if not joint.type == 'fixed':
+            joint_names.append(tip_joint_name)
 
     print(f"FAST_FK_NUMBER_OF_JOINTS={len(joint_names)}", end="")
 
