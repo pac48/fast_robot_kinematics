@@ -29,8 +29,8 @@ namespace fast_fk {
     void JointData::set_joints(size_t  batch_ind, const Eigen::Vector<float, FAST_FK_NUMBER_OF_JOINTS> &values) {
 #pragma unroll
         for (auto ind = 0; ind < FAST_FK_NUMBER_OF_JOINTS; ++ind) {
-            joint_data[batch_ind][ind][0] = values[ind];
-            joint_data[batch_ind][ind][1] = values[ind];
+            joint_data[batch_ind][ind] = values[ind];
+            joint_data[batch_ind][ind] = values[ind];
         }
     }
 
@@ -106,8 +106,7 @@ namespace fast_fk {
     }
 
     void JointData::forward_kinematics() {
-        internal::forward_kinematics_internal(joint_data.data()->data()->data(),
-                                              joint_data.size() * joint_data.data()->size() *internal::joint_data_length);
+        internal::forward_kinematics_internal(joint_data.data()->data(), joint_data.size() * joint_data.data()->size());
     }
 
     fk_interface::IKSolverStats

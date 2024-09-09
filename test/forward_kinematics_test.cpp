@@ -12,7 +12,7 @@ using KI = kdl_impl::JointData;
 #endif
 
 int main(int arc, char **argv) {
-    constexpr int multiplier = 8*8*32;
+    constexpr int multiplier = 8*8*8;
     auto rand_values = std::make_unique<std::array<Eigen::Vector<float, KI::get_num_joints()>, fast_fk::batch_size>>();
     for (auto &rand_val: *rand_values) {
         rand_val = Eigen::Vector<float, KI::get_num_joints()>::Random();

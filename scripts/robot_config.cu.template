@@ -5,13 +5,18 @@ namespace fast_fk::internal {
     constexpr int data_size = 2 + 3 + 9 + 2; // 16
     constexpr int num_of_joints = {{rotations|length}}; // 16
 
-    __global__ void forward_kinematics_internal_kernel(float *input_data, std::size_t total_size) {
+    __global__ void forward_kinematics_internal_kernel(float *joints, std::size_t total_size) {
         unsigned int idx = blockIdx.x * blockDim.x + threadIdx.x;
         if (idx * data_size * num_of_joints >= total_size) {
             return;
         }
-        input_data += (idx * data_size*num_of_joints);
+        float* joint_offset = joints + idx* num_of_joints;
+        float input_data[data_size*num_of_joints];
 
+        {% for type in types %}
+        input_data[{{loop.index0}} * data_size + 0] = joint_offset[{{loop.index0}}];
+        input_data[{{loop.index0}} * data_size + 1] = joint_offset[{{loop.index0}}];
+        {% endfor %}
         // row major
         constexpr float R_all[{{rotations|length}}* 9] = {
                 {%- for rotation in rotations %}
@@ -242,9 +247,10 @@ namespace fast_fk::internal {
             last_size = size;
             cudaMalloc(&dev_data, size * sizeof(float));
 
-            copy_to_device(input_data, size);
 
         }
+        copy_to_device(input_data, size);
+
         // Invoke the CUDA kernel
         constexpr size_t block_size = 256;
         size_t num_threads = size/(data_size*num_of_joints);
@@ -252,7 +258,7 @@ namespace fast_fk::internal {
         forward_kinematics_internal_kernel<<<grid_size, block_size>>>(dev_data, size);
         cudaDeviceSynchronize();
 
-//        copy_from_device(input_data, size);
+        copy_from_device(input_data, size);
 
         // Error handling
         cudaError_t cudaerr = cudaDeviceSynchronize();
