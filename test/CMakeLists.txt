@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(fast_forward_kinematics)
+project(fast_forward_kinematics CXX CUDA)
 set(CMAKE_CUDA_ARCHITECTURES "native")
 enable_language(CUDA)
 

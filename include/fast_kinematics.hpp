@@ -10,6 +10,7 @@
 #include "fast_inverse_kinematics.hpp"
 
 namespace fast_fk {
+    constexpr size_t batch_size = 128*128*128/4;
     struct JointData {
 
         static constexpr size_t get_num_joints() {
@@ -20,6 +21,7 @@ namespace fast_fk {
 
         void set_joint(size_t ind, float value);
 
+        void set_joints(size_t  batch_ind, const Eigen::Vector<float, FAST_FK_NUMBER_OF_JOINTS> &values);
         void set_joints(const Eigen::Vector<float, FAST_FK_NUMBER_OF_JOINTS> &values);
 
         void set_joint(size_t ind, float sin_t, float cos_t);
@@ -44,7 +46,7 @@ namespace fast_fk {
 
         Eigen::Matrix<float, 3, 3> target_rot;
         Eigen::Vector<float, 3> target_pose;
-        std::array<std::array<float, internal::joint_data_length>, FAST_FK_NUMBER_OF_JOINTS> joint_data = {0};
+        std::array<std::array<std::array<float, internal::joint_data_length>, FAST_FK_NUMBER_OF_JOINTS>, batch_size> joint_data = {0};
         std::unique_ptr<internal::InverseKinematics> fun;
     };
 

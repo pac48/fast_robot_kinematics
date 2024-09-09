@@ -33,6 +33,9 @@ function(generate_fast_forward_kinematics_library_common URDF_FILE ROOT_LINK TIP
     set(sources ${CMAKE_SOURCE_DIR}/src/fast_kinematics.cpp ${CMAKE_SOURCE_DIR}/src/fast_inverse_kinematics.cpp)
 
     add_library(fast_forward_kinematics_library SHARED forward_kinematics_lib.${EXT} ${sources})
+    set_target_properties(fast_forward_kinematics_library PROPERTIES CUDA_RESOLVE_DEVICE_SYMBOLS ON CUDA_SEPARABLE_COMPILATION ON)
+    target_compile_options(fast_forward_kinematics_library PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-O3>)
+
     add_dependencies(fast_forward_kinematics_library code_generation)
 
     target_include_directories(fast_forward_kinematics_library PUBLIC ${CMAKE_SOURCE_DIR}/include)

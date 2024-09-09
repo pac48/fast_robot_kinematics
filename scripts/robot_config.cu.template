@@ -65,8 +65,8 @@ namespace fast_fk::internal {
             float &R33 = input_data[ind * data_size + 13];
 
             {% if type == 'revolute' %}
-            const float &sin_t = input_data[ind * data_size + 0];
-            const float &cos_t = input_data[ind * data_size + 1];
+            const float &sin_t = sin(input_data[ind * data_size + 0]);
+            const float &cos_t = cos(input_data[ind * data_size + 1]);
             {% if loop.index0 == 0 %}
             // apply revolute rotation to R_fixed and store in joint to base rotation R
             R11 = R11_fixed * cos_t + R12_fixed * sin_t;
@@ -222,8 +222,18 @@ namespace fast_fk::internal {
         {% endfor %}
     }
 
+
     static float *dev_data = nullptr;
     static std::size_t last_size = 0;
+
+    void copy_to_device(float *input_data, std::size_t size){
+        cudaMemcpy(dev_data, input_data, size * sizeof(float), cudaMemcpyKind::cudaMemcpyHostToDevice);
+    }
+
+    void copy_from_device(float *input_data, std::size_t size){
+        cudaMemcpy(input_data, dev_data, size * sizeof(float), cudaMemcpyKind::cudaMemcpyDeviceToHost);
+    }
+
     void forward_kinematics_internal(float *input_data, std::size_t size) {
         if (dev_data== nullptr || size > last_size){
             if (dev_data != nullptr){
@@ -231,15 +241,18 @@ namespace fast_fk::internal {
             }
             last_size = size;
             cudaMalloc(&dev_data, size * sizeof(float));
+
+            copy_to_device(input_data, size);
+
         }
-        cudaMemcpy(dev_data, input_data, size * sizeof(float), cudaMemcpyKind::cudaMemcpyHostToDevice);
         // Invoke the CUDA kernel
         constexpr size_t block_size = 256;
         size_t num_threads = size/(data_size*num_of_joints);
         size_t grid_size = (num_threads + block_size - 1) / block_size;
         forward_kinematics_internal_kernel<<<grid_size, block_size>>>(dev_data, size);
         cudaDeviceSynchronize();
-        cudaMemcpy(input_data, dev_data, size * sizeof(float), cudaMemcpyKind::cudaMemcpyDeviceToHost);
+
+//        copy_from_device(input_data, size);
 
         // Error handling
         cudaError_t cudaerr = cudaDeviceSynchronize();
