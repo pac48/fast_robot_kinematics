@@ -49,13 +49,13 @@ namespace fast_fk::internal {
 
           // R is the rotation from joint_i+1 in the base frame (row major)
           float &R11 = input_data[ind * data_size + 5];
-          float &R12 = input_data[ind * data_size + 6];
-          float &R13 = input_data[ind * data_size + 7];
-          float &R21 = input_data[ind * data_size + 8];
+          float &R21 = input_data[ind * data_size + 6];
+          float &R31 = input_data[ind * data_size + 7];
+          float &R12 = input_data[ind * data_size + 8];
           float &R22 = input_data[ind * data_size + 9];
-          float &R23 = input_data[ind * data_size + 10];
-          float &R31 = input_data[ind * data_size + 11];
-          float &R32 = input_data[ind * data_size + 12];
+          float &R32 = input_data[ind * data_size + 10];
+          float &R13 = input_data[ind * data_size + 11];
+          float &R23 = input_data[ind * data_size + 12];
           float &R33 = input_data[ind * data_size + 13];
 
           {% if type == 'revolute' %}
@@ -79,26 +79,26 @@ namespace fast_fk::internal {
           input_data[ind * data_size + 4] = offset_z;
 
           {% else %}
-          // R_old is the rotation from joint_i in base frame (column major)
+          // R_old is the rotation from joint_i in base frame (row major)
           float &R11_old = input_data[(ind - 1) * data_size + 5];
-          float &R12_old = input_data[(ind - 1) * data_size + 6];
-          float &R13_old = input_data[(ind - 1) * data_size + 7];
-          float &R21_old = input_data[(ind - 1) * data_size + 8];
+          float &R21_old = input_data[(ind - 1) * data_size + 6];
+          float &R31_old = input_data[(ind - 1) * data_size + 7];
+          float &R12_old = input_data[(ind - 1) * data_size + 8];
           float &R22_old = input_data[(ind - 1) * data_size + 9];
-          float &R23_old = input_data[(ind - 1) * data_size + 10];
-          float &R31_old = input_data[(ind - 1) * data_size + 11];
-          float &R32_old = input_data[(ind - 1) * data_size + 12];
+          float &R32_old = input_data[(ind - 1) * data_size + 10];
+          float &R13_old = input_data[(ind - 1) * data_size + 11];
+          float &R23_old = input_data[(ind - 1) * data_size + 12];
           float &R33_old = input_data[(ind - 1) * data_size + 13];
 
-          // R_tmp is the rotation from joint_i+1 in frame joint_i after rotation applied (column major)
+          // R_tmp is the rotation from joint_i+1 in frame joint_i after rotation applied (row major)
           float &R11_tmp = input_data[ind * data_size + 5];
-          float &R12_tmp = input_data[ind * data_size + 6];
-          float &R13_tmp = input_data[ind * data_size + 7];
-          float &R21_tmp = input_data[ind * data_size + 8];
+          float &R21_tmp = input_data[ind * data_size + 6];
+          float &R31_tmp = input_data[ind * data_size + 7];
+          float &R12_tmp = input_data[ind * data_size + 8];
           float &R22_tmp = input_data[ind * data_size + 9];
-          float &R23_tmp = input_data[ind * data_size + 10];
-          float &R31_tmp = input_data[ind * data_size + 11];
-          float &R32_tmp = input_data[ind * data_size + 12];
+          float &R32_tmp = input_data[ind * data_size + 10];
+          float &R13_tmp = input_data[ind * data_size + 11];
+          float &R23_tmp = input_data[ind * data_size + 12];
           float &R33_tmp = input_data[ind * data_size + 13];
 
           // apply revolute rotation to R11_fixed and store in R11_tmp
@@ -168,13 +168,13 @@ namespace fast_fk::internal {
           {% else %}
           // R_old is the rotation from joint_i in base frame (row major)
           float &R11_old = input_data[(ind - 1) * data_size + 5];
-          float &R12_old = input_data[(ind - 1) * data_size + 6];
-          float &R13_old = input_data[(ind - 1) * data_size + 7];
-          float &R21_old = input_data[(ind - 1) * data_size + 8];
+          float &R21_old = input_data[(ind - 1) * data_size + 6];
+          float &R31_old = input_data[(ind - 1) * data_size + 7];
+          float &R12_old = input_data[(ind - 1) * data_size + 8];
           float &R22_old = input_data[(ind - 1) * data_size + 9];
-          float &R23_old = input_data[(ind - 1) * data_size + 10];
-          float &R31_old = input_data[(ind - 1) * data_size + 11];
-          float &R32_old = input_data[(ind - 1) * data_size + 12];
+          float &R32_old = input_data[(ind - 1) * data_size + 10];
+          float &R13_old = input_data[(ind - 1) * data_size + 11];
+          float &R23_old = input_data[(ind - 1) * data_size + 12];
           float &R33_old = input_data[(ind - 1) * data_size + 13];
 
           // apply R11_old rotation R11_fixed, to make it in base frame
