@@ -1,0 +1,37 @@
+Time taken by function: 4.87572e+09 nanoseconds
+Average: 36.3269 nanoseconds
+
+ Performance counter stats for 'cmake-build-release/test/forward_kinematics_test':
+
+    41,142,082      cpu_core/L1-dcache-load-misses/
+21,554,730,887      cpu_core/L1-dcache-loads/
+ <not counted>      cpu_atom/L1-dcache-loads/                                               (0.00%)
+         8,810      cpu_core/LLC-load-misses/
+ <not counted>      cpu_atom/LLC-load-misses/                                               (0.00%)
+        35,479      cpu_core/LLC-loads/
+ <not counted>      cpu_atom/LLC-loads/                                                     (0.00%)
+
+   4.884335241 seconds time elapsed
+
+   4.876004000 seconds user
+   0.008000000 seconds sys
+
+
+  46.65%  forward_kinemat  libfast_forward_kinematics_library.so  [.] fast_fk::internal::forward_kinematics_internal
+  17.89%  forward_kinemat  libmvec.so.1                           [.] _ZGVbN4v_sinf_sse4
+   7.69%  forward_kinemat  libm.so.6                              [.] __cosf_fma
+   7.55%  forward_kinemat  libfast_forward_kinematics_library.so  [.] fast_fk::JointData::set_joints
+   6.88%  forward_kinemat  libmvec.so.1                           [.] _ZGVbN4v_cosf_sse4
+   6.69%  forward_kinemat  libm.so.6                              [.] __sinf_fma
+   1.30%  forward_kinemat  forward_kinematics_test                [.] main
+   1.07%  forward_kinemat  libfast_forward_kinematics_library.so  [.] 0x0000000000002384
+   1.06%  forward_kinemat  libfast_forward_kinematics_library.so  [.] 0x00000000000023b4
+   0.60%  forward_kinemat  libfast_forward_kinematics_library.so  [.] 0x00000000000023d4
+   0.55%  forward_kinemat  libfast_forward_kinematics_library.so  [.] fast_fk::JointData::forward_kinematics
+   0.52%  forward_kinemat  forward_kinematics_test                [.] 0x00000000000011a4
+   0.51%  forward_kinemat  libfast_forward_kinematics_library.so  [.] 0x00000000000022c4
+   0.49%  forward_kinemat  forward_kinematics_test                [.] 0x0000000000001254
+   0.44%  forward_kinemat  libfast_forward_kinematics_library.so  [.] 0x00000000000022d4
+   0.02%  forward_kinemat  [unknown]                              [k] 0xffffffffa3480213
+   0.02%  forward_kinemat  [unknown]                              [k] 0xffffffffa3480104
+   0.02%  forward_kinemat  libc.so.6                              [.] __random
