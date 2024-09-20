@@ -1,58 +1,55 @@
 #include "chrono"
 #include "iostream"
 
-#ifdef FAST_FK_USE_EIGEN
-
-#include "forward_kinematics_eigen.hpp"
-#include "inverse_kinematics_eigen.hpp"
-
+#ifdef USE_FAST_KINEMATICS
+#include "fast_kinematics.hpp"
+using IK = fast_fk::JointData;
 #else
-#include "forward_kinematics.hpp"
+
+#include "kdl_kinematics.hpp"
+
+using IK = kdl_impl::JointData;
 #endif
+
 
 int main(int arc, char **argv) {
     unsigned seed = time(0);
     srand(seed);
     rand();
 
-    constexpr int iterations = 128 * 128 * 10;
+    constexpr int iterations = 128 * 128 * 5* MULTIPLIER;
 
     // get target pose
-    Eigen::VectorXd q_in = Eigen::VectorXd::Random(FAST_FK_NUMBER_OF_JOINTS);
-    fast_fk::JointData joints;
-    joints.set_joints(q_in);
-    fast_fk::forward_kinematics(joints);
-    Eigen::Matrix<double, 4, 4> tf;
-    joints.get_frame(FAST_FK_NUMBER_OF_JOINTS - 1, tf);
-    Eigen::Matrix<double, 3, 3> target_rot = tf.block<3, 3>(0, 0);
-    Eigen::Vector<double, 3> target_pose = tf.block<3, 1>(0, 3);
-
-    LBFGSpp::LBFGSParam<double> param;
-    LBFGSpp::LBFGSSolver<double> solver(param);
-    fast_fk::InverseKinematics fun(target_rot, target_pose);
+    Eigen::VectorX<float> q_in = Eigen::VectorX<float>::Random(IK::get_num_joints());
+    fk_interface::InverseKinematicsInterface<IK> fk_interface;
+    fk_interface.set_joints(q_in);
+    fk_interface.forward_kinematics();
+    Eigen::Matrix<float, 4, 4> tf;
+    fk_interface.get_frame(IK::get_num_joints() - 1, tf);
 
     auto start = std::chrono::high_resolution_clock::now();
 
-    double fx;
-    int niter;
-    Eigen::VectorXd q = 1 * Eigen::VectorXd::Random(FAST_FK_NUMBER_OF_JOINTS);
-    for (int ind = 0; ind < iterations; ++ind) {
-        q = Eigen::VectorXd::Random(FAST_FK_NUMBER_OF_JOINTS);
-        try {
-            niter = solver.minimize(fun, q, fx);
-        } catch (const std::runtime_error &e) {
-            std::cout << " failed!!" << std::endl;
-            std::cout << "q: " << q.transpose() << std::endl;
-            std::cout << "q_in: " << q_in.transpose() << std::endl;
-            std::cout << niter << " iterations" << std::endl;
-            std::cout << "f(x) = " << fx << std::endl;
-            std::cout << "||grad|| = " << solver.final_grad_norm() << std::endl;
-            continue;
-        }
+    fk_interface::IKSolverStats stats;
+    size_t failed = 0;
+    size_t succeeded = 0;
 
-//        std::cout << niter << " iterations" << std::endl;
-//        std::cout << "f(x) = " << fx << std::endl;
-//        std::cout << "||grad|| = " << solver.final_grad_norm() << std::endl;
+    Eigen::VectorX<float> q = 1 * Eigen::VectorX<float>::Random(IK::get_num_joints());
+    for (int ind = 0; ind < iterations; ++ind) {
+        q = Eigen::VectorX<float>::Random(IK::get_num_joints());
+        stats = fk_interface.inverse_kinematics(tf, q);
+        failed += stats.success == 0;
+        succeeded += stats.success == 1;
+//        if (!stats.success) {
+        // debug info
+//            std::cout << " failed!!" << std::endl;
+//            std::cout << "q: " << q.transpose() << std::endl;
+//            std::cout << "q_in: " << q_in.transpose() << std::endl;
+//            std::cout << stats.niter << " iterations" << std::endl;
+//            std::cout << "f(x) = " << stats.fx << std::endl;
+//            std::cout << "||grad|| = " << stats.grad_norm << std::endl;
+//            std::cout << "error: " << stats.what << std::endl;
+//            continue;
+//        }
     }
 
     auto stop = std::chrono::high_resolution_clock::now();
@@ -60,6 +57,8 @@ int main(int arc, char **argv) {
 
     std::cout << "Time taken by function: " << (double) duration.count() << " microseconds" << std::endl;
     std::cout << "Average: " << ((double) duration.count()) / (iterations) << " microseconds"
+              << std::endl;
+    std::cout << "Percent success: " << ((double) (100.0 * succeeded) / (failed + succeeded)) << "%"
               << std::endl;
 
     return 0;

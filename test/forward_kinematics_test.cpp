@@ -1,46 +1,42 @@
 #include "chrono"
 #include "iostream"
 
-#ifdef FAST_FK_USE_EIGEN
+#ifdef USE_FAST_KINEMATICS
 
-#include "forward_kinematics_eigen.hpp"
+#include "fast_kinematics.hpp"
 
+using KI = fast_fk::JointData;
 #else
-#include "forward_kinematics.hpp"
+#include "kdl_kinematics.hpp"
+using KI = kdl_impl::JointData;
 #endif
 
 int main(int arc, char **argv) {
-  constexpr int iterations = 128 * 128;
-  std::array<Eigen::Vector<double, FAST_FK_NUMBER_OF_JOINTS>, iterations> rand_values;
-  for (auto &rand_val: rand_values) {
-    rand_val = Eigen::Vector<double, FAST_FK_NUMBER_OF_JOINTS>::Random();
-  }
-
-  fast_fk::JointData joints;
-  auto start = std::chrono::high_resolution_clock::now();
-
-  for (int i = 0; i < iterations; i++) {
-    auto &rand_val = rand_values[i];
-    joints.set_joints(rand_val, (1.0 - rand_val.array() * rand_val.array()).sqrt());
-    for (int k = 0; k < 128 * 128; k++) {
-      fast_fk::forward_kinematics(joints);
-
-      //    Eigen::Matrix4d transform;
-//    for (auto ind_debug = 0 ; ind_debug<6; ind_debug++){
-//      joints.get_frame(ind_debug, transform);
-//      std::cout << transform <<"\n\n";
-//    }
-
-//    break;
+    constexpr int iterations = 128 * 128;
+    constexpr int multiplier = 128 * MULTIPLIER;
+    std::array<Eigen::Vector<float, KI::get_num_joints()>, iterations> rand_values;
+    for (auto &rand_val: rand_values) {
+        rand_val = Eigen::Vector<float, KI::get_num_joints()>::Random();
     }
-  }
 
-  auto stop = std::chrono::high_resolution_clock::now();
-  auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start);
+    fk_interface::ForwardKinematicsInterface<KI> fk_interface;
+    Eigen::Matrix<float, 4, 4> tf;
 
-  std::cout << "Time taken by function: " << (double) duration.count() << " nanoseconds" << std::endl;
-  std::cout << "Average: " << ((double) duration.count()) / (iterations * 128 * 128) << " nanoseconds"
-            << std::endl;
+    auto start = std::chrono::high_resolution_clock::now();
 
-  return 0;
+    for (int k = 0; k < multiplier; k++) {
+        for (int i = 0; i < iterations; i++) {
+            fk_interface.set_joints(rand_values[i]);
+            fk_interface.forward_kinematics();
+        }
+    }
+
+    auto stop = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start);
+
+    std::cout << "Time taken by function: " << (float) duration.count() << " nanoseconds" << std::endl;
+    std::cout << "Average: " << ((float) duration.count()) / (iterations * multiplier) << " nanoseconds"
+              << std::endl;
+
+    return 0;
 }
