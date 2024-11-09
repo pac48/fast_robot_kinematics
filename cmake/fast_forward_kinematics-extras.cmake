@@ -69,7 +69,7 @@ function(generate_fast_forward_kinematics_library target_name)
             PREFIX ${CMAKE_BINARY_DIR}/LBFGSpp
             GIT_REPOSITORY https://github.com/yixuan/LBFGSpp.git
             GIT_TAG v0.3.0
-            CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}
+            CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR} -DBUILD_TESTING=OFF
     )
     ExternalProject_Get_Property(LBFGSpp source_dir)
     set(LBFGSppIncludeDir ${source_dir}/include)
@@ -86,12 +86,15 @@ function(generate_fast_forward_kinematics_library target_name)
 #    find_package(Eigen3 3.3 NO_MODULE)
     if(NOT Eigen3_FOUND)
         include(FetchContent)
+        set(PROJECT_BUILD_TESTING ${BUILD_TESTING})
+        set(BUILD_TESTING OFF)
         FetchContent_Declare(
                 eigen
                 GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
                 GIT_TAG        3.4.0
         )
         FetchContent_MakeAvailable(eigen)
+        set(BUILD_TESTING ${PROJECT_BUILD_TESTING})
 
     endif ()
     target_link_libraries(fast_forward_kinematics_library PUBLIC Eigen3::Eigen)
