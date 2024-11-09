@@ -39,10 +39,7 @@ function(generate_fast_forward_kinematics_library_common target_name)
             VERBATIM
     )
     add_custom_target(code_generation DEPENDS forward_kinematics_lib.${ARG_EXT})
-
-    set(sources ${CMAKE_SOURCE_DIR}/src/fast_kinematics.cpp ${CMAKE_SOURCE_DIR}/src/fast_inverse_kinematics.cpp)
-
-    add_library(${target_name} SHARED forward_kinematics_lib.${ARG_EXT} ${sources})
+    add_library(${target_name} SHARED forward_kinematics_lib.${ARG_EXT})
     add_dependencies(${target_name} code_generation)
 
     target_include_directories(${target_name} PUBLIC ${CMAKE_SOURCE_DIR}/include)
