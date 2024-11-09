@@ -33,4 +33,4 @@ install(FILES
         "${CMAKE_BINARY_DIR}/fast_forward_kinematics-config.cmake"
         "${CMAKE_BINARY_DIR}/fast_forward_kinematics-config-version.cmake"
         "${CMAKE_SOURCE_DIR}/cmake/fast_forward_kinematics.cmake"
-        DESTINATION "${CMAKE_INSTALL_LIBDIR}/fast_forward_kinematics")
+        DESTINATION "${CMAKE_INSTALL_DATADIR}/fast_forward_kinematics/cmake")
