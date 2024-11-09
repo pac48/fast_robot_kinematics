@@ -42,7 +42,7 @@ function(generate_fast_forward_kinematics_library_common target_name)
     add_library(${target_name} SHARED forward_kinematics_lib.${ARG_EXT})
     add_dependencies(${target_name} code_generation)
 
-    target_link_libraries(${target_name} PUBLIC fast_forward_kinematics_header)
+    target_include_directories(${target_name} PUBLIC ${fast_forward_kinematics_INCLUDE_DIRS})
     target_compile_definitions(${target_name} PUBLIC "${FAST_FK_NUMBER_OF_JOINTS}")
 
 
