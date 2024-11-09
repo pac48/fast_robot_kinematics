@@ -1,4 +1,14 @@
-function(generate_fast_forward_kinematics_library_common URDF_FILE ROOT_LINK TIP_LINK EXT)
+include(CMakeParseArguments)
+function(generate_fast_forward_kinematics_library_common target_name)
+    cmake_parse_arguments(ARG "" "URDF_FILE;ROOT_LINK;TIP_LINK;EXT" "" ${ARGN})
+    if (ARG_UNPARSED_ARGUMENTS)
+        message(FATAL_ERROR "generate_fast_forward_kinematics_library_common() called with invalid arguments.")
+    endif ()
+
+    # Set cmake build type to Release if not specified
+    if (NOT DEFINED CMAKE_BUILD_TYPE OR "${CMAKE_BUILD_TYPE}" STREQUAL "")
+        set(CMAKE_BUILD_TYPE Release)
+    endif ()
 
     find_package(Python REQUIRED COMPONENTS Interpreter)
     if (Python_Interpreter_FOUND)
@@ -8,41 +18,51 @@ function(generate_fast_forward_kinematics_library_common URDF_FILE ROOT_LINK TIP
     endif ()
 
     execute_process(
-            COMMAND ${Python_EXECUTABLE} ${CMAKE_SOURCE_DIR}/scripts/get_num_joints.py ${URDF_FILE} ${ROOT_LINK} ${TIP_LINK}
+            COMMAND ${Python_EXECUTABLE} ${CMAKE_SOURCE_DIR}/scripts/get_num_joints.py ${ARG_URDF_FILE} ${ARG_ROOT_LINK} ${ARG_TIP_LINK}
             OUTPUT_VARIABLE FAST_FK_NUMBER_OF_JOINTS
             OUTPUT_STRIP_TRAILING_WHITESPACE
             COMMAND_ECHO STDOUT
     )
 
     add_custom_command(
-            OUTPUT forward_kinematics_lib.${EXT}
-            COMMAND ${Python_EXECUTABLE} ${CMAKE_SOURCE_DIR}/scripts/robot_gen.py ${URDF_FILE} ${CMAKE_SOURCE_DIR}/scripts/robot_config.${EXT}.template
-            ${CMAKE_CURRENT_BINARY_DIR}/forward_kinematics_lib.${EXT} ${ROOT_LINK} ${TIP_LINK}
-            DEPENDS ${URDF_FILE} ${CMAKE_SOURCE_DIR}/scripts/robot_config.${EXT}.template
+            OUTPUT forward_kinematics_lib.${ARG_EXT}
+            COMMAND ${Python_EXECUTABLE} ${CMAKE_SOURCE_DIR}/scripts/robot_gen.py ${ARG_URDF_FILE} ${CMAKE_SOURCE_DIR}/scripts/robot_config.${ARG_EXT}.template
+            ${CMAKE_CURRENT_BINARY_DIR}/forward_kinematics_lib.${ARG_EXT} ${ARG_ROOT_LINK} ${ARG_TIP_LINK}
+            DEPENDS ${ARG_URDF_FILE} ${CMAKE_SOURCE_DIR}/scripts/robot_config.${ARG_EXT}.template
             COMMENT
             "Running `${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/scripts/robot_gen.py
-                      ${URDF_FILE}
-                      ${CMAKE_SOURCE_DIR}/scripts/robot_config.cpp.template
+                      ${ARG_URDF_FILE}
+            ${CMAKE_SOURCE_DIR}/scripts/robot_config.cpp.template
                       ${CMAKE_CURRENT_BINARY_DIR}/forward_kinematics_test.cpp
                       ${ROOT_LINK}
-                      ${TIP_LINK}`"
+            ${TIP_LINK}`"
             VERBATIM
     )
-    add_custom_target(code_generation DEPENDS forward_kinematics_lib.${EXT})
+    add_custom_target(code_generation DEPENDS forward_kinematics_lib.${ARG_EXT})
 
     set(sources ${CMAKE_SOURCE_DIR}/src/fast_kinematics.cpp ${CMAKE_SOURCE_DIR}/src/fast_inverse_kinematics.cpp)
 
-    add_library(fast_forward_kinematics_library SHARED forward_kinematics_lib.${EXT} ${sources})
-    add_dependencies(fast_forward_kinematics_library code_generation)
+    add_library(${target_name} SHARED forward_kinematics_lib.${ARG_EXT} ${sources})
+    add_dependencies(${target_name} code_generation)
 
-    target_include_directories(fast_forward_kinematics_library PUBLIC ${CMAKE_SOURCE_DIR}/include)
-    target_compile_definitions(fast_forward_kinematics_library PUBLIC "${FAST_FK_NUMBER_OF_JOINTS}")
-    find_package(Eigen3 3.3 NO_MODULE)
-    target_link_libraries(fast_forward_kinematics_library PUBLIC Eigen3::Eigen)
+    target_include_directories(${target_name} PUBLIC ${CMAKE_SOURCE_DIR}/include)
+    target_compile_definitions(${target_name} PUBLIC "${FAST_FK_NUMBER_OF_JOINTS}")
+
 
 endfunction()
 
-function(generate_fast_forward_kinematics_library URDF_FILE ROOT_LINK TIP_LINK)
+
+macro(ffk_failed_arg_parse)
+    message(FATAL_ERROR "generate_fast_forward_kinematics_library() called with unused arguments: ${ARG_UNPARSED_ARGUMENTS}. "
+            "Expected arguments: generate_fast_forward_kinematics_library(target_name URDF_FILE val1 ROOT_LINK val2 TIP_LINK val3)")
+endmacro()
+
+function(generate_fast_forward_kinematics_library target_name)
+    cmake_parse_arguments(ARG "" "URDF_FILE;ROOT_LINK;TIP_LINK" "" ${ARGN})
+    if (ARG_UNPARSED_ARGUMENTS)
+        ffk_failed_arg_parse()
+    endif ()
+
     include(ExternalProject)
     ExternalProject_Add(
             LBFGSpp
@@ -54,14 +74,31 @@ function(generate_fast_forward_kinematics_library URDF_FILE ROOT_LINK TIP_LINK)
     ExternalProject_Get_Property(LBFGSpp source_dir)
     set(LBFGSppIncludeDir ${source_dir}/include)
 
-    generate_fast_forward_kinematics_library_common(${URDF_FILE} ${ROOT_LINK} ${TIP_LINK} "cpp")
+    generate_fast_forward_kinematics_library_common(fast_forward_kinematics_library
+            URDF_FILE "${ARG_URDF_FILE}"
+            ROOT_LINK "${ARG_ROOT_LINK}"
+            TIP_LINK "${ARG_TIP_LINK}"
+            EXT "cpp")
 
     add_dependencies(fast_forward_kinematics_library LBFGSpp)
     target_compile_definitions(fast_forward_kinematics_library PUBLIC FAST_FK_USE_IK)
     target_include_directories(fast_forward_kinematics_library PUBLIC ${LBFGSppIncludeDir})
+    find_package(Eigen3 3.3 NO_MODULE)
+    target_link_libraries(fast_forward_kinematics_library PUBLIC Eigen3::Eigen)
+
+    target_compile_options(fast_forward_kinematics_library PUBLIC -Ofast -march=native)
 
 endfunction()
 
-function(generate_fast_forward_kinematics_library_cuda URDF_FILE ROOT_LINK TIP_LINK)
-    generate_fast_forward_kinematics_library_common(${URDF_FILE} ${ROOT_LINK} ${TIP_LINK} "cu")
+function(generate_fast_forward_kinematics_library_cuda target_name)
+    cmake_parse_arguments(ARG "" "URDF_FILE;ROOT_LINK;TIP_LINK" "" ${ARGN})
+    if (ARG_UNPARSED_ARGUMENTS)
+        ffk_failed_arg_parse()
+    endif ()
+    enable_language(CUDA)
+    generate_fast_forward_kinematics_library_common(fast_forward_kinematics_library
+            URDF_FILE "${ARG_URDF_FILE}"
+            ROOT_LINK "${ARG_ROOT_LINK}"
+            TIP_LINK "${ARG_TIP_LINK}"
+            EXT "cu")
 endfunction()
