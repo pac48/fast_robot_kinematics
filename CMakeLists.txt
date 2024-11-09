@@ -15,8 +15,10 @@ include(CTest)
 include(fast_forward_kinematics.cmake)
 
 add_library(fast_forward_kinematics_header INTERFACE)
-target_include_directories(fast_forward_kinematics_header INTERFACE ${CMAKE_SOURCE_DIR}/include)
-
+target_include_directories(fast_forward_kinematics_header INTERFACE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+)
 if (BUILD_TESTING)
     add_subdirectory(test)
 endif ()
@@ -40,5 +42,16 @@ install(FILES
 
 install(DIRECTORY "${CMAKE_SOURCE_DIR}/code_generation" DESTINATION "${CMAKE_INSTALL_DATADIR}/fast_forward_kinematics/cmake")
 install(DIRECTORY include/ DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/fast_forward_kinematics")
+
 # Create an export set
-install(TARGETS fast_forward_kinematics_header EXPORT fast_forward_kinematics_headerTargets)
+install(TARGETS fast_forward_kinematics_header EXPORT fast_forward_kinematicsTargets)
+# Targets files
+export(
+        EXPORT fast_forward_kinematicsTargets
+        FILE ${CMAKE_CURRENT_BINARY_DIR}/fast_forward_kinematics-targets.cmake
+)
+install(
+        EXPORT fast_forward_kinematicsTargets
+        FILE fast_forward_kinematics-targets.cmake
+        DESTINATION lib/cmake/fast_forward_kinematics
+)
