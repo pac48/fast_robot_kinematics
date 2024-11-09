@@ -1,8 +1,6 @@
 #pragma once
 
 #include <concepts>
-#include <iostream>
-
 #include <Eigen/Core>
 
 namespace fk_interface {

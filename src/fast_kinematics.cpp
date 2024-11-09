@@ -93,7 +93,7 @@ namespace fast_fk {
 
     void JointData::forward_kinematics() {
         internal::forward_kinematics_internal(joint_data.data()->data(),
-                                              joint_data.size() * internal::joint_data_length);
+                                              joint_data.size() * 16);
     }
 
     fk_interface::IKSolverStats
