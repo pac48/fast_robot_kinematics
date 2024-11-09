@@ -18,7 +18,7 @@ function(generate_fast_forward_kinematics_library_common target_name)
     endif ()
 
     execute_process(
-            COMMAND ${Python_EXECUTABLE} ${CMAKE_SOURCE_DIR}/scripts/get_num_joints.py ${ARG_URDF_FILE} ${ARG_ROOT_LINK} ${ARG_TIP_LINK}
+            COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/code_generation/get_num_joints.py ${ARG_URDF_FILE} ${ARG_ROOT_LINK} ${ARG_TIP_LINK}
             OUTPUT_VARIABLE FAST_FK_NUMBER_OF_JOINTS
             OUTPUT_STRIP_TRAILING_WHITESPACE
             COMMAND_ECHO STDOUT
@@ -26,13 +26,13 @@ function(generate_fast_forward_kinematics_library_common target_name)
 
     add_custom_command(
             OUTPUT forward_kinematics_lib.${ARG_EXT}
-            COMMAND ${Python_EXECUTABLE} ${CMAKE_SOURCE_DIR}/scripts/robot_gen.py ${ARG_URDF_FILE} ${CMAKE_SOURCE_DIR}/scripts/robot_config.${ARG_EXT}.template
+            COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/code_generation/robot_gen.py ${ARG_URDF_FILE} ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/code_generation/robot_config.${ARG_EXT}.template
             ${CMAKE_CURRENT_BINARY_DIR}/forward_kinematics_lib.${ARG_EXT} ${ARG_ROOT_LINK} ${ARG_TIP_LINK}
-            DEPENDS ${ARG_URDF_FILE} ${CMAKE_SOURCE_DIR}/scripts/robot_config.${ARG_EXT}.template
+            DEPENDS ${ARG_URDF_FILE} ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/code_generation/robot_config.${ARG_EXT}.template
             COMMENT
-            "Running `${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/scripts/robot_gen.py
+            "Running `${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/code_generation/robot_gen.py
                       ${ARG_URDF_FILE}
-            ${CMAKE_SOURCE_DIR}/scripts/robot_config.cpp.template
+            ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/code_generation/robot_config.cpp.template
                       ${CMAKE_CURRENT_BINARY_DIR}/forward_kinematics_test.cpp
                       ${ROOT_LINK}
             ${TIP_LINK}`"

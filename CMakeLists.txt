@@ -12,7 +12,7 @@ include(GNUInstallDirs)
 include(CTest)
 
 # Add cmake macro to project
-include(cmake/fast_forward_kinematics.cmake)
+include(fast_forward_kinematics.cmake)
 
 if (BUILD_TESTING)
     add_subdirectory(test)
@@ -32,5 +32,8 @@ write_basic_package_version_file(fast_forward_kinematics-config-version.cmake
 install(FILES
         "${CMAKE_BINARY_DIR}/fast_forward_kinematics-config.cmake"
         "${CMAKE_BINARY_DIR}/fast_forward_kinematics-config-version.cmake"
-        "${CMAKE_SOURCE_DIR}/cmake/fast_forward_kinematics.cmake"
+        "${CMAKE_SOURCE_DIR}/fast_forward_kinematics.cmake"
         DESTINATION "${CMAKE_INSTALL_DATADIR}/fast_forward_kinematics/cmake")
+
+install(DIRECTORY "${CMAKE_SOURCE_DIR}/code_generation" DESTINATION "${CMAKE_INSTALL_DATADIR}/fast_forward_kinematics/cmake")
+install(DIRECTORY include/ DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/fast_forward_kinematics")
