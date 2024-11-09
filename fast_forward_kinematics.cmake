@@ -42,7 +42,7 @@ function(generate_fast_forward_kinematics_library_common target_name)
     add_library(${target_name} SHARED forward_kinematics_lib.${ARG_EXT})
     add_dependencies(${target_name} code_generation)
 
-    target_include_directories(${target_name} PUBLIC ${CMAKE_SOURCE_DIR}/include)
+    target_link_libraries(${target_name} PUBLIC fast_forward_kinematics_header)
     target_compile_definitions(${target_name} PUBLIC "${FAST_FK_NUMBER_OF_JOINTS}")
 
 
@@ -80,7 +80,7 @@ function(generate_fast_forward_kinematics_library target_name)
     add_dependencies(fast_forward_kinematics_library LBFGSpp)
     target_compile_definitions(fast_forward_kinematics_library PUBLIC FAST_FK_USE_IK)
     target_include_directories(fast_forward_kinematics_library PUBLIC ${LBFGSppIncludeDir})
-#    find_package(Eigen3 3.3 NO_MODULE)
+    find_package(Eigen3 3.3 NO_MODULE)
     if(NOT Eigen3_FOUND)
         include(FetchContent)
         set(PROJECT_BUILD_TESTING ${BUILD_TESTING})

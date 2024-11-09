@@ -14,6 +14,9 @@ include(CTest)
 # Add cmake macro to project
 include(fast_forward_kinematics.cmake)
 
+add_library(fast_forward_kinematics_header INTERFACE)
+target_include_directories(fast_forward_kinematics_header INTERFACE ${CMAKE_SOURCE_DIR}/include)
+
 if (BUILD_TESTING)
     add_subdirectory(test)
 endif ()
