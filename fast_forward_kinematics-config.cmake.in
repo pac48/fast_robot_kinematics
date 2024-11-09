@@ -1,0 +1,11 @@
+@PACKAGE_INIT@
+
+set(FFK_VERSION_MAJOR @FFK_VERSION_MAJOR@)
+set(FFK_VERSION_MINOR @FFK_VERSION_MINOR@)
+set(FFK_VERSION @FFK_VERSION@)
+
+set(fast_forward_kinematics_FOUND ON)
+set_and_check(fast_forward_kinematics_INCLUDE_DIRS "@PACKAGE_CMAKE_INSTALL_INCLUDEDIR@")
+
+include("${CMAKE_CURRENT_LIST_DIR}/fast_forward_kinematics-targets.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/cmake/fast_forward_kinematics-targets.cmake")

@@ -1,8 +1,9 @@
 cmake_minimum_required(VERSION 3.22)
 project(fast_forward_kinematics)
 
-# Set C++ standard to C++20
-set(CMAKE_CXX_STANDARD 20)
+set(FFK_VERSION_MAJOR 0)
+set(FFK_VERSION_MINOR 1)
+set(FFK_VERSION ${FFK_VERSION_MAJOR}.${FFK_VERSION_MINOR})
 
 option(BUILD_TESTING "Build fast_forward_kinematics tests" OFF)
 
@@ -18,8 +19,23 @@ configure_file(
         "${PROJECT_BINARY_DIR}/${CMAKE_FILES_DIRECTORY}/fast_forward_kinematics-extras.cmake" @ONLY
 )
 
-install(DIRECTORY include DESTINATION include/)
-
 if (BUILD_TESTING)
     add_subdirectory(test)
 endif ()
+
+
+include(CMakePackageConfigHelpers)
+
+configure_package_config_file(fast_forward_kinematics-config.cmake.in fast_forward_kinematics-config.cmake
+        INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/fast_forward_kinematics"
+        PATH_VARS CMAKE_INSTALL_INCLUDEDIR CMAKE_INSTALL_LIBDIR
+        NO_CHECK_REQUIRED_COMPONENTS_MACRO)
+
+write_basic_package_version_file(fast_forward_kinematics-config-version.cmake
+        VERSION ${FFK_VERSION} COMPATIBILITY AnyNewerVersion)
+
+install(FILES
+        "${CMAKE_BINARY_DIR}/fast_forward_kinematics.cmake"
+        "${CMAKE_BINARY_DIR}/fast_forward_kinematics-version.cmake"
+        "${CMAKE_SOURCE_DIR}/cmake/fast_forward_kinematics.cmake"
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}/fast_forward_kinematics")
