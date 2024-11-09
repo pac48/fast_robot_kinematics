@@ -11,13 +11,8 @@ option(BUILD_TESTING "Build fast_forward_kinematics tests" OFF)
 include(GNUInstallDirs)
 include(CTest)
 
-# Generate the module for the python
-include(cmake/fast_forward_kinematics-extras.cmake)
-
-configure_file(
-        ${CMAKE_CURRENT_SOURCE_DIR}/cmake/fast_forward_kinematics-extras.cmake
-        "${PROJECT_BINARY_DIR}/${CMAKE_FILES_DIRECTORY}/fast_forward_kinematics-extras.cmake" @ONLY
-)
+# Add cmake macro to project
+include(cmake/fast_forward_kinematics.cmake)
 
 if (BUILD_TESTING)
     add_subdirectory(test)
@@ -35,7 +30,7 @@ write_basic_package_version_file(fast_forward_kinematics-config-version.cmake
         VERSION ${FFK_VERSION} COMPATIBILITY AnyNewerVersion)
 
 install(FILES
-        "${CMAKE_BINARY_DIR}/fast_forward_kinematics.cmake"
-        "${CMAKE_BINARY_DIR}/fast_forward_kinematics-version.cmake"
+        "${CMAKE_BINARY_DIR}/fast_forward_kinematics-config.cmake"
+        "${CMAKE_BINARY_DIR}/fast_forward_kinematics-config-version.cmake"
         "${CMAKE_SOURCE_DIR}/cmake/fast_forward_kinematics.cmake"
         DESTINATION "${CMAKE_INSTALL_LIBDIR}/fast_forward_kinematics")
