@@ -83,7 +83,17 @@ function(generate_fast_forward_kinematics_library target_name)
     add_dependencies(fast_forward_kinematics_library LBFGSpp)
     target_compile_definitions(fast_forward_kinematics_library PUBLIC FAST_FK_USE_IK)
     target_include_directories(fast_forward_kinematics_library PUBLIC ${LBFGSppIncludeDir})
-    find_package(Eigen3 3.3 NO_MODULE)
+#    find_package(Eigen3 3.3 NO_MODULE)
+    if(NOT Eigen3_FOUND)
+        include(FetchContent)
+        FetchContent_Declare(
+                eigen
+                GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
+                GIT_TAG        3.4.0
+        )
+        FetchContent_MakeAvailable(eigen)
+
+    endif ()
     target_link_libraries(fast_forward_kinematics_library PUBLIC Eigen3::Eigen)
 
     target_compile_options(fast_forward_kinematics_library PUBLIC -Ofast -march=native)
