@@ -18,7 +18,7 @@ FetchContent_MakeAvailable(fast_forward_kinematics)
 set(URDF_FILE ${CMAKE_SOURCE_DIR}/urdf/robot.urdf)
 set(ROOT base_link)
 set(TIP grasp_link)
-generate_fast_forward_kinematics_library(fast_forward_kinematics_library_{robots}
+generate_fast_forward_kinematics_library(fast_forward_kinematics_library
                                          URDF_FILE ${URDF_FILE}
                                          ROOT_LINK ${ROOT}
                                          TIP_LINK ${TIP})
