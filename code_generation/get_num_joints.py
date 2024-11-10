@@ -4,9 +4,9 @@ import argparse
 
 def run():
     parser = argparse.ArgumentParser()
-    parser.add_argument('urdf_file')
-    parser.add_argument('root_link_name')
-    parser.add_argument('tip_link_name')
+    parser.add_argument("urdf_file")
+    parser.add_argument("root_link_name")
+    parser.add_argument("tip_link_name")
     args = parser.parse_args()
 
     root_link_name = args.root_link_name
@@ -18,7 +18,7 @@ def run():
     while tip_link_name != root_link_name:
         tip_joint_name, tip_link_name = robot.parent_map[tip_link_name]
         joint = robot.joint_map[tip_joint_name]
-        if not joint.type == 'fixed':
+        if not joint.type == "fixed":
             joint_names.append(tip_joint_name)
 
     print(f"FAST_FK_NUMBER_OF_JOINTS={len(joint_names)}", end="")
