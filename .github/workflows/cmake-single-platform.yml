@@ -44,3 +44,11 @@ jobs:
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       run: ctest -C ${{env.BUILD_TYPE}}
 
+    - name: Configure CMake For Fetch Content
+      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
+      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
+      run: cmake -B ${{github.workspace}}/build_fetch -S ${{github.workspace}}/test/fetch_content_test -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+
+    - name: Build For Fetch Content
+      # Build your program with the given configuration
+      run: cmake --build ${{github.workspace}}/build_fetch --config ${{env.BUILD_TYPE}}

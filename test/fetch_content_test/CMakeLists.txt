@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(fast_forward_kinematics)
+project(fast_forward_kinematics_fetch_content_test)
 
 set(CMAKE_CXX_STANDARD 20)
 if (NOT DEFINED CMAKE_BUILD_TYPE OR "${CMAKE_BUILD_TYPE}" STREQUAL "")
