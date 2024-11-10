@@ -1,10 +1,11 @@
 #pragma once
 
+#include <memory>
+
 #include <Eigen/Core>
 #include <Eigen/Dense>
 
-#include "fast_inverse_kinematics.hpp"
-#include "memory"
+#include "fast_forward_kinematics/fast_inverse_kinematics.hpp"
 
 namespace fast_fk
 {

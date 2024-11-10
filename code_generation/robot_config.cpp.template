@@ -219,7 +219,7 @@ namespace fast_fk::internal {
 }
 
 #ifdef FAST_FK_USE_IK
-#include "fast_inverse_kinematics/fast_inverse_kinematics.hpp"
+#include "fast_forward_kinematics/fast_inverse_kinematics.hpp"
 
 namespace fast_fk::internal {
     constexpr float axis_scale = 1;

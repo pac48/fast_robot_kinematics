@@ -2,7 +2,7 @@
 #include "iostream"
 
 #ifdef USE_FAST_KINEMATICS
-#include "fast_inverse_kinematics/fast_kinematics.hpp"
+#include "fast_forward_kinematics/fast_kinematics.hpp"
 using IK = fast_fk::JointData;
 #else
 
